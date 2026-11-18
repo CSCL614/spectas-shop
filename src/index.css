@@ -389,3 +389,36 @@
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(56, 189, 248, 0.55);
 }
+
+/* Admin Navbar Subtle Animated Spectacles Marquee */
+@keyframes spectacles-marquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.spectacles-marquee-mask {
+  mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+
+.spectacles-marquee-track {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  will-change: transform;
+  animation: spectacles-marquee 28s linear infinite;
+}
+
+.spectacles-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spectacles-marquee-track {
+    animation: none;
+  }
+}

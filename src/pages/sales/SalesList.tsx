@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { salesApi, adminApi } from '../../api/services';
 import { useAuth } from '../../contexts/AuthContext';
-import type { SaleResponse, UserResponse, PaymentMethod, CustomerProfileResponse } from '../../types';
+import type {
+  SaleResponse,
+  UserResponse,
+  PaymentMethod,
+  CustomerProfileResponse,
+  SearchSuggestionItem,
+} from '../../types';
 import { PAYMENT_METHODS } from '../../types';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { SearchSuggestionsInput } from '../../components/ui/SearchSuggestionsInput';
 import { formatINR, getDateRange } from '../../utils/helpers';
 import { downloadOrderReceiptPdf } from '../../utils/receiptGenerator';
 import {
-  Search,
   Plus,
   Trash2,
-  Eye,
   Edit2,
   ChevronLeft,
   ChevronRight,
@@ -31,12 +36,16 @@ import {
   CreditCard,
   Clock,
   Download,
+  Truck,
+  Tag,
+  UserCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export const SalesList: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isAdmin = user?.role === 'ADMIN';
 
   const [sales, setSales] = useState<SaleResponse[]>([]);
@@ -72,16 +81,31 @@ export const SalesList: React.FC = () => {
   const [clearPaymentMethod, setClearPaymentMethod] = useState<PaymentMethod>('Cash');
   const [clearing, setClearing] = useState(false);
 
-  // Customer Profile Modal
+  // Customer & Order Details Modal
   const [customerModalOpen, setCustomerModalOpen] = useState(false);
   const [customerModalLoading, setCustomerModalLoading] = useState(false);
   const [customerProfile, setCustomerProfile] = useState<CustomerProfileResponse | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<SaleResponse | null>(null);
 
   useEffect(() => {
     if (isAdmin) {
       adminApi.getSalespersons().then((res) => setSalespersons(res.data.data)).catch(() => {});
     }
   }, [isAdmin]);
+
+  // Close customer modal on Escape key
+  useEffect(() => {
+    if (!customerModalOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setCustomerModalOpen(false);
+        setCustomerProfile(null);
+        setSelectedOrder(null);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [customerModalOpen]);
 
   const handlePresetChange = (preset: string) => {
     setDatePreset(preset);
@@ -96,13 +120,14 @@ export const SalesList: React.FC = () => {
     setPage(0);
   };
 
-  const fetchSales = async () => {
+  const fetchSales = async (searchOverride?: string) => {
+    const activeSearch = searchOverride !== undefined ? searchOverride : search;
     try {
       setLoading(true);
       const res = await salesApi.getAll({
         page,
         size: 10,
-        search: search || undefined,
+        search: activeSearch || undefined,
         dateFrom: dateFrom || undefined,
         dateTo: dateTo || undefined,
         productType: productType || undefined,
@@ -136,6 +161,28 @@ export const SalesList: React.FC = () => {
     fetchSales();
   };
 
+  const handleSelectSuggestion = (item: SearchSuggestionItem) => {
+    if (item.type === 'page' && item.route) {
+      navigate(item.route);
+      return;
+    }
+    if ((item.type === 'sticker' || item.type === 'order') && item.orderId) {
+      navigate(`/sales/${item.orderId}`);
+      return;
+    }
+    if ((item.type === 'customer' || item.type === 'phone') && item.customerIdentifier) {
+      setSearch(item.value);
+      setPage(0);
+      fetchSales(item.value);
+      handleOpenCustomerProfile(item.customerIdentifier);
+      return;
+    }
+    // Brand or fallback: filter table immediately
+    setSearch(item.value);
+    setPage(0);
+    fetchSales(item.value);
+  };
+
   const handleResetFilters = () => {
     setSearch('');
     setDatePreset('all');
@@ -146,21 +193,34 @@ export const SalesList: React.FC = () => {
     setPaymentMethod('');
     setSalespersonId('');
     setPage(0);
+    fetchSales('');
   };
 
-  const handleOpenCustomerProfile = async (identifier: string) => {
+  const handleOpenCustomerProfile = async (identifier: string, clickedSale?: SaleResponse) => {
     if (!identifier) return;
     try {
+      setSelectedOrder(clickedSale || null);
       setCustomerModalLoading(true);
       setCustomerModalOpen(true);
       const res = await salesApi.getCustomerProfile(identifier);
-      setCustomerProfile(res.data.data);
+      const profile = res.data.data;
+      setCustomerProfile(profile);
+      if (!clickedSale && profile.orders && profile.orders.length > 0) {
+        setSelectedOrder(profile.orders[0]);
+      }
     } catch {
-      toast.error('Failed to load customer profile');
+      toast.error('Failed to load customer details');
       setCustomerModalOpen(false);
+      setSelectedOrder(null);
     } finally {
       setCustomerModalLoading(false);
     }
+  };
+
+  const handleCloseCustomerModal = () => {
+    setCustomerModalOpen(false);
+    setCustomerProfile(null);
+    setSelectedOrder(null);
   };
 
   const handleConfirmClearBalance = async () => {
@@ -269,19 +329,22 @@ export const SalesList: React.FC = () => {
       </div>
 
       {/* Custom Date Range & Search Filters */}
-      <div className="card-premium p-4 sm:p-5">
+      <div className="card-premium p-4 sm:p-5 overflow-visible relative z-20">
         <form onSubmit={handleSearchSubmit} className="space-y-3.5">
           <div className={`grid grid-cols-1 sm:grid-cols-2 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-3`}>
-            <div className="lg:col-span-2 relative">
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search STK-1016, 1016, customer, phone, brand..."
-                className="input-modern pr-10"
-              />
-              <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
-            </div>
+            <SearchSuggestionsInput
+              value={search}
+              onChange={(val) => setSearch(val)}
+              onSelectSuggestion={handleSelectSuggestion}
+              onSubmitSearch={() => {
+                setPage(0);
+                fetchSales();
+              }}
+              isAdmin={isAdmin}
+              salespersonId={salespersonId}
+              placeholder="Search STK-1016, customer, phone, brand, Order ID, or page..."
+              className="lg:col-span-2"
+            />
 
             <div>
               <select
@@ -313,9 +376,11 @@ export const SalesList: React.FC = () => {
                 <select
                   value={salespersonId}
                   onChange={(e) => { setSalespersonId(e.target.value); setPage(0); }}
+                  aria-label="Filter orders by creator"
                   className="input-modern cursor-pointer font-bold text-[#172554]"
                 >
-                  <option value="">All Sales Executives</option>
+                  <option value="">All Orders</option>
+                  <option value="ADMIN">Admin</option>
                   {salespersons.map((sp) => (
                     <option key={sp.id} value={sp.id}>{sp.fullName}</option>
                   ))}
@@ -407,11 +472,19 @@ export const SalesList: React.FC = () => {
                   const isDelivered = sale.deliveryStatus === 'DELIVERED';
 
                   return (
-                    <tr key={sale.id}>
+                    <tr
+                      key={sale.id}
+                      onClick={() => handleOpenCustomerProfile(sale.customerMobile || sale.customerName, sale)}
+                      title="Click anywhere on this row to view customer & order details"
+                      className="cursor-pointer group hover:bg-blue-50/75 transition-colors"
+                    >
                       <td className="max-w-[155px]">
                         <div className="flex items-center gap-1.5">
                           <span
-                            onClick={() => handleCopy(sale.stickerNumber)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleCopy(sale.stickerNumber);
+                            }}
                             className="sticker-badge cursor-pointer gap-1"
                             title="Click to copy sticker"
                           >
@@ -442,22 +515,16 @@ export const SalesList: React.FC = () => {
                         </div>
                       </td>
 
-                      {/* Clickable Customer Section & Name */}
-                      <td
-                        onClick={() => handleOpenCustomerProfile(sale.customerMobile || sale.customerName)}
-                        className="cursor-pointer group select-none max-w-[165px]"
-                        title="Click customer to view profile & order history"
-                      >
-                        <div className="p-1 -m-1 rounded-lg group-hover:bg-blue-50/90 border border-transparent group-hover:border-blue-200 transition-all">
-                          <p className="font-black text-[#172554] text-xs group-hover:text-[#2563EB] group-hover:underline transition-colors flex items-center gap-1 min-w-0">
-                            <User className="w-3 h-3 text-[#2563EB] shrink-0" />
-                            <span className="truncate" title={sale.customerName}>{sale.customerName}</span>
-                          </p>
-                          <p className="text-[11px] text-slate-500 font-mono font-semibold flex items-center gap-1 mt-0.5 whitespace-nowrap group-hover:text-[#2563EB]">
-                            <Phone className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                            <span>{sale.customerMobile}</span>
-                          </p>
-                        </div>
+                      {/* Customer Info */}
+                      <td className="select-none max-w-[165px]">
+                        <p className="font-black text-[#172554] text-xs group-hover:text-[#2563EB] group-hover:underline transition-colors flex items-center gap-1 min-w-0">
+                          <User className="w-3 h-3 text-[#2563EB] shrink-0" />
+                          <span className="truncate" title={sale.customerName}>{sale.customerName}</span>
+                        </p>
+                        <p className="text-[11px] text-slate-500 font-mono font-semibold flex items-center gap-1 mt-0.5 whitespace-nowrap group-hover:text-[#2563EB]">
+                          <Phone className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                          <span>{sale.customerMobile}</span>
+                        </p>
                       </td>
 
                       <td className="whitespace-nowrap">
@@ -524,13 +591,19 @@ export const SalesList: React.FC = () => {
                         </td>
                       )}
 
-                      <td className="text-right whitespace-nowrap">
+                      <td
+                        className="text-right whitespace-nowrap"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex items-center justify-end gap-1">
                           {!isCleared && (
                             <motion.button
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
-                              onClick={() => setClearModalSale(sale)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setClearModalSale(sale);
+                              }}
                               title="Mark Balance Cleared"
                               className="h-7 px-2 inline-flex items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-[10px] font-extrabold transition-all shadow-xs"
                             >
@@ -540,21 +613,18 @@ export const SalesList: React.FC = () => {
                           <motion.button
                             whileHover={{ scale: 1.06 }}
                             whileTap={{ scale: 0.94 }}
-                            onClick={() => handleDownloadReceipt(sale)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDownloadReceipt(sale);
+                            }}
                             title="Download Receipt (PDF)"
                             className="w-7 h-7 inline-flex items-center justify-center rounded-lg bg-blue-50 text-[#2563EB] hover:bg-[#2563EB] hover:text-white border border-blue-200 transition-all shadow-xs"
                           >
                             <Download className="w-3.5 h-3.5" />
                           </motion.button>
                           <Link
-                            to={`/sales/${sale.id}`}
-                            title="View Full Details"
-                            className="w-7 h-7 inline-flex items-center justify-center rounded-lg text-slate-500 hover:text-[#2563EB] bg-white hover:bg-blue-50 border border-[#D5DFED] hover:border-blue-300 transition-all"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </Link>
-                          <Link
                             to={`/sales/${sale.id}/edit`}
+                            onClick={(e) => e.stopPropagation()}
                             title="Edit Order"
                             className="w-7 h-7 inline-flex items-center justify-center rounded-lg text-slate-500 hover:text-amber-600 bg-white hover:bg-amber-50 border border-[#D5DFED] hover:border-amber-300 transition-all"
                           >
@@ -564,7 +634,10 @@ export const SalesList: React.FC = () => {
                             <motion.button
                               whileHover={{ scale: 1.06 }}
                               whileTap={{ scale: 0.94 }}
-                              onClick={() => handleDelete(sale.id, sale.stickerNumber)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(sale.id, sale.stickerNumber);
+                              }}
                               title="Delete Order"
                               className="w-7 h-7 inline-flex items-center justify-center rounded-lg text-slate-500 hover:text-rose-600 bg-white hover:bg-rose-50 border border-[#D5DFED] hover:border-rose-300 transition-all"
                             >
@@ -607,21 +680,26 @@ export const SalesList: React.FC = () => {
         )}
       </div>
 
-      {/* Customer Profile & Order History Modal */}
+      {/* Customer & Order Details Modal (Triggered by Clicking Any Customer Row) */}
       <AnimatePresence>
         {customerModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#172554]/60 backdrop-blur-sm">
+          <div
+            onClick={handleCloseCustomerModal}
+            className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0F172A]/60 backdrop-blur-sm"
+          >
             <motion.div
               initial={{ opacity: 0, scale: 0.94, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: 12 }}
               transition={{ type: 'spring', stiffness: 360, damping: 28 }}
-              className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border-2 border-[#D5DFED] max-h-[90vh] overflow-hidden relative flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border-2 border-[#CFDCEB] max-h-[90vh] overflow-hidden relative flex flex-col"
             >
-              <div className="h-1.5 w-full bg-gradient-to-r from-[#172554] via-[#2563EB] to-[#0D9488] shrink-0" />
-              <div className="p-6 overflow-y-auto relative">
+              <div className="h-1.5 w-full bg-gradient-to-r from-[#0F172A] via-[#2563EB] to-[#0D9488] shrink-0" />
+              <div className="p-5 sm:p-6 overflow-y-auto relative">
                 <button
-                  onClick={() => { setCustomerModalOpen(false); setCustomerProfile(null); }}
+                  onClick={handleCloseCustomerModal}
+                  aria-label="Close customer details"
                   className="absolute top-4 right-4 text-slate-500 hover:text-rose-600 p-1.5 rounded-xl bg-[#EEF2F8] hover:bg-rose-50 border border-[#D5DFED] transition-colors"
                 >
                   <X className="w-4 h-4" />
@@ -631,38 +709,164 @@ export const SalesList: React.FC = () => {
                   <div className="py-20 flex justify-center"><LoadingSpinner size="lg" /></div>
                 ) : (
                   <div className="space-y-5">
-                    <div className="flex items-center space-x-3.5 pb-4 border-b border-[#D5DFED]">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#172554] via-[#2563EB] to-[#0D9488] text-white flex items-center justify-center font-black text-lg shadow-md">
-                        {customerProfile.customerName.charAt(0).toUpperCase()}
+                    {/* 1. Customer Information Card */}
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-[#F8FAFE] via-white to-[#EEF7F6] border-[1.5px] border-[#CFDCEB] flex flex-col sm:flex-row sm:items-center justify-between gap-4 pr-10">
+                      <div className="flex items-center space-x-3.5">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#0F172A] via-[#2563EB] to-[#0D9488] text-white flex items-center justify-center font-black text-lg shadow-md shrink-0">
+                          {customerProfile.customerName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#2563EB]">
+                            Customer Information
+                          </span>
+                          <h2 className="text-lg font-black text-[#172554] tracking-tight leading-tight">
+                            {customerProfile.customerName}
+                          </h2>
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-semibold mt-1">
+                            <span className="font-mono font-bold flex items-center gap-1 text-[#172554]">
+                              <Phone className="w-3 h-3 text-[#2563EB]" />
+                              {customerProfile.customerMobile}
+                            </span>
+                            {selectedOrder && (
+                              <span className="flex items-center gap-1">
+                                <UserCheck className="w-3 h-3 text-[#0D9488]" />
+                                Handled by: <strong className="text-[#172554]">{selectedOrder.salespersonName}</strong>
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <h2 className="text-lg font-black text-[#172554] tracking-tight">{customerProfile.customerName}</h2>
-                        <p className="text-xs font-mono font-bold text-slate-500 flex items-center gap-1.5 mt-0.5">
-                          <Phone className="w-3 h-3 text-[#2563EB]" />
-                          <span>{customerProfile.customerMobile}</span>
-                        </p>
+
+                      {selectedOrder && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadReceipt(selectedOrder)}
+                            className="btn-secondary py-1.5 px-3 text-xs space-x-1.5"
+                          >
+                            <Download className="w-3.5 h-3.5 text-[#2563EB]" />
+                            <span>Receipt PDF</span>
+                          </button>
+                          <Link
+                            to={`/sales/${selectedOrder.id}`}
+                            className="btn-primary py-1.5 px-3.5 text-xs space-x-1.5"
+                          >
+                            <span>Full Order Page</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 2. Selected Order & Delivery Status Cards */}
+                    {selectedOrder && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Order Details */}
+                        <div className="p-4 rounded-2xl bg-white border-[1.5px] border-[#CFDCEB] space-y-3">
+                          <div className="flex items-center justify-between border-b border-[#EEF2F8] pb-2">
+                            <h3 className="text-xs font-black text-[#172554] uppercase tracking-wider flex items-center gap-1.5">
+                              <Tag className="w-3.5 h-3.5 text-[#2563EB]" />
+                              <span>Order Details</span>
+                            </h3>
+                            <span className="sticker-badge">{selectedOrder.stickerNumber}</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2.5 text-xs">
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase block">Brand / Company</span>
+                              <span className="font-extrabold text-[#172554]">{selectedOrder.companyName}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase block">Product Type</span>
+                              <span className="font-extrabold text-[#172554]">{selectedOrder.productType || 'FRAME'}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase block">Order Date</span>
+                              <span className="font-bold text-slate-700">{selectedOrder.saleDate}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase block">Payment Method</span>
+                              <span className="font-bold text-[#0D9488]">{selectedOrder.paymentMethod}</span>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-[#EEF2F8] flex items-center justify-between text-[11px]">
+                            <span className="text-slate-500 font-semibold">
+                              MRP: <strong className="text-[#172554]">{formatINR(selectedOrder.originalSellingPrice || selectedOrder.sellingPrice)}</strong>
+                              {selectedOrder.discountAmount > 0 && (
+                                <span className="text-amber-600 font-bold ml-1.5">(-{formatINR(selectedOrder.discountAmount)})</span>
+                              )}
+                            </span>
+                            <span className="font-black text-[#2563EB]">
+                              Final: {formatINR(selectedOrder.sellingPrice)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Delivery Status */}
+                        <div className="p-4 rounded-2xl bg-white border-[1.5px] border-[#CFDCEB] space-y-3">
+                          <div className="flex items-center justify-between border-b border-[#EEF2F8] pb-2">
+                            <h3 className="text-xs font-black text-[#172554] uppercase tracking-wider flex items-center gap-1.5">
+                              <Truck className="w-3.5 h-3.5 text-[#0D9488]" />
+                              <span>Delivery Status</span>
+                            </h3>
+                            <span className={selectedOrder.deliveryStatus === 'DELIVERED' ? 'badge-delivered' : 'badge-pending'}>
+                              {selectedOrder.deliveryStatus === 'DELIVERED' ? 'Delivered' : 'Pending'}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2.5 text-xs">
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase block">Expected Delivery</span>
+                              <span className="font-extrabold text-[#172554]">{selectedOrder.expectedDeliveryDate}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase block">Order Balance</span>
+                              {selectedOrder.remainingBalance === 0 ? (
+                                <span className="font-extrabold text-[#0D9488]">Fully Cleared</span>
+                              ) : (
+                                <span className="font-black text-rose-600 tabular-nums">
+                                  {formatINR(selectedOrder.remainingBalance)} Due
+                                </span>
+                              )}
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase block">Advance Paid</span>
+                              <span className="font-extrabold text-[#0D9488] tabular-nums">{formatINR(selectedOrder.advanceAmount)}</span>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 uppercase block">Order Reference</span>
+                              <span className="font-mono text-[10px] font-bold text-slate-500 break-all">{selectedOrder.id}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 3. Payment Details Summary */}
+                    <div>
+                      <h3 className="text-xs font-black text-[#172554] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                        <CreditCard className="w-3.5 h-3.5 text-[#0D9488]" />
+                        <span>Payment Details & Lifetime Summary</span>
+                      </h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                        <div className="p-3.5 rounded-xl bg-blue-50/80 border-[1.5px] border-blue-200">
+                          <span className="text-[10px] font-extrabold text-blue-700 uppercase">Total Orders</span>
+                          <p className="text-lg font-black text-[#172554] mt-0.5 tabular-nums">{customerProfile.totalOrders}</p>
+                        </div>
+                        <div className="p-3.5 rounded-xl bg-[#EEF2F8] border-[1.5px] border-[#D5DFED]">
+                          <span className="text-[10px] font-extrabold text-slate-500 uppercase">Total Billed</span>
+                          <p className="text-lg font-black text-[#2563EB] mt-0.5 tabular-nums">{formatINR(customerProfile.totalPurchaseAmount)}</p>
+                        </div>
+                        <div className="p-3.5 rounded-xl bg-emerald-50/80 border-[1.5px] border-emerald-200">
+                          <span className="text-[10px] font-extrabold text-emerald-700 uppercase">Total Received</span>
+                          <p className="text-lg font-black text-[#0D9488] mt-0.5 tabular-nums">{formatINR(customerProfile.totalPaymentsReceived)}</p>
+                        </div>
+                        <div className="p-3.5 rounded-xl bg-rose-50/80 border-[1.5px] border-rose-200">
+                          <span className="text-[10px] font-extrabold text-rose-600 uppercase">Balance Due</span>
+                          <p className="text-lg font-black text-rose-600 mt-0.5 tabular-nums">{formatINR(customerProfile.outstandingBalance)}</p>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                      <div className="p-3.5 rounded-xl bg-blue-50/80 border-[1.5px] border-blue-200">
-                        <span className="text-[10px] font-extrabold text-blue-700 uppercase">Total Orders</span>
-                        <p className="text-lg font-black text-[#172554] mt-0.5 tabular-nums">{customerProfile.totalOrders}</p>
-                      </div>
-                      <div className="p-3.5 rounded-xl bg-[#EEF2F8] border-[1.5px] border-[#D5DFED]">
-                        <span className="text-[10px] font-extrabold text-slate-500 uppercase">Total Billed</span>
-                        <p className="text-lg font-black text-[#2563EB] mt-0.5 tabular-nums">{formatINR(customerProfile.totalPurchaseAmount)}</p>
-                      </div>
-                      <div className="p-3.5 rounded-xl bg-emerald-50/80 border-[1.5px] border-emerald-200">
-                        <span className="text-[10px] font-extrabold text-emerald-700 uppercase">Total Received</span>
-                        <p className="text-lg font-black text-[#0D9488] mt-0.5 tabular-nums">{formatINR(customerProfile.totalPaymentsReceived)}</p>
-                      </div>
-                      <div className="p-3.5 rounded-xl bg-rose-50/80 border-[1.5px] border-rose-200">
-                        <span className="text-[10px] font-extrabold text-rose-600 uppercase">Balance Due</span>
-                        <p className="text-lg font-black text-rose-600 mt-0.5 tabular-nums">{formatINR(customerProfile.outstandingBalance)}</p>
-                      </div>
-                    </div>
-
+                    {/* 4. Order History Table */}
                     <div>
                       <h3 className="text-xs font-black text-[#172554] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
                         <ShoppingBag className="w-3.5 h-3.5 text-[#2563EB]" />
@@ -675,66 +879,74 @@ export const SalesList: React.FC = () => {
                               <th>Sticker</th>
                               <th>Brand / Type</th>
                               <th>Order Date</th>
-                              <th>Delivery</th>
-                              <th>Amount</th>
-                              <th>Balance</th>
+                              <th className="text-center">Delivery</th>
+                              <th className="text-right">Amount</th>
+                              <th className="text-right">Balance</th>
                               <th className="text-right">Action</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {customerProfile.orders.map((ord) => (
-                              <tr key={ord.id}>
-                                <td><span className="sticker-badge">{ord.stickerNumber}</span></td>
-                                <td>
-                                  <span className="font-extrabold text-[#172554]">{ord.companyName}</span>
-                                  <span className="text-[10px] text-slate-400 block font-bold">{ord.productType || 'FRAME'}</span>
-                                </td>
-                                <td className="font-semibold text-slate-600">{ord.saleDate}</td>
-                                <td>
-                                  <span className={ord.deliveryStatus === 'DELIVERED' ? 'badge-delivered' : 'badge-pending'}>
-                                    {ord.deliveryStatus === 'DELIVERED' ? 'Delivered' : 'Pending'}
-                                  </span>
-                                </td>
-                                <td className="font-black text-[#172554] tabular-nums">{formatINR(ord.sellingPrice)}</td>
-                                <td>
-                                  {ord.remainingBalance === 0 ? (
-                                    <span className="badge-delivered">Cleared</span>
-                                  ) : (
-                                    <span className="font-black text-rose-600 text-xs tabular-nums">{formatINR(ord.remainingBalance)}</span>
-                                  )}
-                                </td>
-                                <td className="text-right">
-                                  <div className="flex items-center justify-end gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDownloadReceipt(ord)}
-                                      title="Download Receipt PDF"
-                                      className="text-[11px] font-extrabold text-[#0D9488] hover:underline inline-flex items-center gap-1"
-                                    >
-                                      <Download className="w-3 h-3" />
-                                      <span>Receipt</span>
-                                    </button>
-                                    <Link
-                                      to={`/sales/${ord.id}`}
-                                      className="text-[11px] font-extrabold text-[#2563EB] hover:underline inline-flex items-center gap-1"
-                                    >
-                                      <span>View</span>
-                                      <ExternalLink className="w-3 h-3" />
-                                    </Link>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
+                            {customerProfile.orders.map((ord) => {
+                              const isSelected = selectedOrder?.id === ord.id;
+                              return (
+                                <tr
+                                  key={ord.id}
+                                  onClick={() => setSelectedOrder(ord)}
+                                  className={`cursor-pointer ${isSelected ? 'bg-blue-50/90' : ''}`}
+                                >
+                                  <td><span className="sticker-badge">{ord.stickerNumber}</span></td>
+                                  <td>
+                                    <span className="font-extrabold text-[#172554]">{ord.companyName}</span>
+                                    <span className="text-[10px] text-slate-400 block font-bold">{ord.productType || 'FRAME'}</span>
+                                  </td>
+                                  <td className="font-semibold text-slate-600 whitespace-nowrap">{ord.saleDate}</td>
+                                  <td className="text-center">
+                                    <span className={ord.deliveryStatus === 'DELIVERED' ? 'badge-delivered' : 'badge-pending'}>
+                                      {ord.deliveryStatus === 'DELIVERED' ? 'Delivered' : 'Pending'}
+                                    </span>
+                                  </td>
+                                  <td className="text-right font-black text-[#172554] tabular-nums whitespace-nowrap">{formatINR(ord.sellingPrice)}</td>
+                                  <td className="text-right whitespace-nowrap">
+                                    {ord.remainingBalance === 0 ? (
+                                      <span className="badge-delivered">Cleared</span>
+                                    ) : (
+                                      <span className="font-black text-rose-600 text-xs tabular-nums">{formatINR(ord.remainingBalance)}</span>
+                                    )}
+                                  </td>
+                                  <td className="text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                    <div className="flex items-center justify-end gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDownloadReceipt(ord)}
+                                        title="Download Receipt PDF"
+                                        className="text-[11px] font-extrabold text-[#0D9488] hover:underline inline-flex items-center gap-1"
+                                      >
+                                        <Download className="w-3 h-3" />
+                                        <span>Receipt</span>
+                                      </button>
+                                      <Link
+                                        to={`/sales/${ord.id}`}
+                                        className="text-[11px] font-extrabold text-[#2563EB] hover:underline inline-flex items-center gap-1"
+                                      >
+                                        <span>Open</span>
+                                        <ExternalLink className="w-3 h-3" />
+                                      </Link>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
                     </div>
 
+                    {/* 5. Payment Transaction History */}
                     {customerProfile.allPayments && customerProfile.allPayments.length > 0 && (
                       <div>
                         <h3 className="text-xs font-black text-[#172554] uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
                           <Receipt className="w-3.5 h-3.5 text-[#0D9488]" />
-                          <span>Payment History & Receipts</span>
+                          <span>Payment Transactions & Receipts</span>
                         </h3>
                         <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                           {customerProfile.allPayments.map((pt, idx) => (

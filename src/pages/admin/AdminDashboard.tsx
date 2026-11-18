@@ -237,7 +237,8 @@ export const AdminDashboard: React.FC = () => {
               onChange={(e) => setSelectedSalesperson(e.target.value)}
               className="bg-transparent text-xs font-extrabold text-[#172554] outline-none cursor-pointer"
             >
-              <option value="">All Sales Specialists</option>
+              <option value="">All Orders (All Staff)</option>
+              <option value="ADMIN">Admin</option>
               {salespersons.map((sp) => (
                 <option key={sp.id} value={sp.id}>
                   {sp.fullName}

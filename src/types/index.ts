@@ -306,3 +306,15 @@ export interface ImportResultResponse {
   errors: { rowNumber: number; field: string; error: string; rawValue?: any }[];
   uploadedFile?: UploadedSheetResponse;
 }
+
+export interface SearchSuggestionItem {
+  id: string;
+  type: 'customer' | 'phone' | 'sticker' | 'brand' | 'order' | 'page';
+  label: string;
+  sublabel: string;
+  value: string;
+  orderId?: string;
+  customerIdentifier?: string;
+  route?: string;
+  badge?: string;
+}

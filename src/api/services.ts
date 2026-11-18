@@ -54,6 +54,14 @@ export const salesApi = {
   getOverdue: () => api.get<ApiResponse<SaleResponse[]>>('/sales/overdue'),
   getCustomerProfile: (identifier: string) =>
     api.get<ApiResponse<CustomerProfileResponse>>(`/sales/customer/${encodeURIComponent(identifier)}`),
+  getSearchSuggestions: (q: string, salespersonId?: string) => {
+    const query = new URLSearchParams();
+    if (q) query.append('q', q);
+    if (salespersonId) query.append('salespersonId', salespersonId);
+    return api.get<ApiResponse<import('../types').SearchSuggestionItem[]>>(
+      `/sales/search-suggestions?${query.toString()}`
+    );
+  },
   seedDummyData: () => api.post<ApiResponse<any>>('/sales/seed-dummy'),
   getDashboardStats: (params?: { dateFrom?: string; dateTo?: string; salespersonId?: string }) => {
     const q = new URLSearchParams();
