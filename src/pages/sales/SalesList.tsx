@@ -393,8 +393,8 @@ export const SalesList: React.FC = () => {
                   <th>Sticker / Brand</th>
                   <th>Customer</th>
                   <th>Price / Paid</th>
-                  <th>Balance</th>
-                  <th>Delivery</th>
+                  <th className="text-center">Balance</th>
+                  <th className="text-center">Delivery</th>
                   {isAdmin && <th>Executive</th>}
                   <th className="text-right">Actions</th>
                 </tr>
@@ -480,21 +480,21 @@ export const SalesList: React.FC = () => {
                         </div>
                       </td>
 
-                      <td className="whitespace-nowrap">
+                      <td className="whitespace-nowrap text-center">
                         {isCleared ? (
                           <span className="badge-delivered">
                             <CheckCircle2 className="w-2.5 h-2.5" />
                             <span>Cleared</span>
                           </span>
                         ) : isPartial ? (
-                          <div>
+                          <div className="inline-flex flex-col items-center">
                             <span className="badge-partial">Partial</span>
                             <p className="text-[10px] font-extrabold text-rose-600 mt-0.5 tabular-nums">
                               Bal: {formatINR(sale.remainingBalance)}
                             </p>
                           </div>
                         ) : (
-                          <div>
+                          <div className="inline-flex flex-col items-center">
                             <span className="badge-overdue">Pending</span>
                             <p className="text-[10px] font-extrabold text-rose-600 mt-0.5 tabular-nums">
                               Bal: {formatINR(sale.remainingBalance)}
@@ -503,8 +503,8 @@ export const SalesList: React.FC = () => {
                         )}
                       </td>
 
-                      <td className="whitespace-nowrap">
-                        <div className="space-y-0.5">
+                      <td className="whitespace-nowrap text-center">
+                        <div className="inline-flex flex-col items-center space-y-0.5">
                           <span className={isDelivered ? 'badge-delivered' : 'badge-pending'}>
                             <span className={`w-1.5 h-1.5 rounded-full ${isDelivered ? 'bg-emerald-600' : 'bg-amber-600'}`} />
                             {isDelivered ? 'Delivered' : 'Pending'}
@@ -514,9 +514,9 @@ export const SalesList: React.FC = () => {
                       </td>
 
                       {isAdmin && (
-                        <td className="max-w-[115px]">
+                        <td className="whitespace-nowrap">
                           <span
-                            className="text-xs font-extrabold text-[#172554] block truncate"
+                            className="text-xs font-extrabold text-[#172554] block max-w-[165px] truncate"
                             title={sale.salespersonName}
                           >
                             {sale.salespersonName}

@@ -425,12 +425,12 @@ export const DailyStatement: React.FC = () => {
                             <p className="font-mono text-[11px] font-semibold text-slate-500 whitespace-nowrap">{o.customerMobile}</p>
                           </td>
                           <td className="font-bold text-slate-700 max-w-[105px] truncate" title={o.companyName}>{o.companyName}</td>
-                          <td className="max-w-[115px]">
+                          <td className="whitespace-nowrap">
                             <div className="flex items-center gap-1.5 min-w-0">
                               <span className="w-5 h-5 rounded-md bg-gradient-to-tr from-[#172554] to-[#2563EB] text-white text-[10px] font-black flex items-center justify-center shrink-0">
                                 {handlerName.charAt(0).toUpperCase()}
                               </span>
-                              <span className="font-extrabold text-[#172554] text-xs truncate" title={handlerName}>
+                              <span className="font-extrabold text-[#172554] text-xs max-w-[165px] truncate" title={handlerName}>
                                 {handlerName}
                               </span>
                             </div>

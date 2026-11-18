@@ -239,6 +239,7 @@ export const excelApi = {
   getUploadedSheetById: (id: string) =>
     api.get<ApiResponse<UploadedSheetResponse>>(`/excel/uploaded-sheets/${id}`),
   downloadUploadedSheet: (id: string) => api.get(`/excel/uploaded-sheets/${id}/download`, { responseType: 'blob' }),
+  deleteUploadedSheet: (id: string) => api.delete<ApiResponse<null>>(`/excel/uploaded-sheets/${id}`),
   exportExcel: (params?: { salespersonId?: string; dateFrom?: string; dateTo?: string; status?: string; productType?: string; paymentMethod?: string; hasDiscount?: string; customColumns?: string }) => {
     const query = new URLSearchParams();
     if (params) {

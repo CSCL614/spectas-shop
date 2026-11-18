@@ -154,7 +154,9 @@ export const Profile: React.FC = () => {
               Profile & Security Credentials
             </h1>
             <p className="text-xs sm:text-sm text-blue-100/90 mt-1 max-w-xl font-medium">
-              Manage your personal staff profile, role permissions, and cryptographically hashed login credentials.
+              {isAdmin
+                ? 'Manage your personal staff profile, role permissions, and cryptographically hashed login credentials.'
+                : 'View your staff profile details, assigned role permissions, and account security policy.'}
             </p>
           </div>
         </div>
@@ -199,113 +201,149 @@ export const Profile: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* 3. Personal Password Reset Form Card */}
-        <div className="md:col-span-2 card-premium p-6 sm:p-8">
-          <div className="flex items-center space-x-2.5 text-sm font-black text-[#172554] pb-3.5 mb-5 border-b border-[#D5DFED]">
-            <span className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#2563EB]">
-              <KeyRound className="w-4 h-4" />
-            </span>
-            <span>Update Personal Account Password</span>
-          </div>
-
-          <form onSubmit={handlePasswordChange} className="space-y-5">
-            <div>
-              <label className="label-modern">
-                Current Password <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type={showCurrent ? 'text' : 'password'}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="input-modern pr-10"
-                  placeholder="Enter current password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrent(!showCurrent)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
-                >
-                  {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+        {/* 3. Personal Password Reset Form Card (ADMIN ONLY) or Security Policy Notice (SALESPERSON) */}
+        {isAdmin ? (
+          <div className="md:col-span-2 card-premium p-6 sm:p-8">
+            <div className="flex items-center space-x-2.5 text-sm font-black text-[#172554] pb-3.5 mb-5 border-b border-[#D5DFED]">
+              <span className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#2563EB]">
+                <KeyRound className="w-4 h-4" />
+              </span>
+              <span>Update Personal Account Password</span>
             </div>
 
-            <div>
-              <label className="label-modern">
-                New Password <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type={showNew ? 'text' : 'password'}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="input-modern pr-10"
-                  placeholder="Minimum 6 characters"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNew(!showNew)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
-                >
-                  {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-
-              {newPassword && (
-                <div className="mt-2 space-y-1">
-                  <div className="flex items-center justify-between text-[10px] font-extrabold">
-                    <span className="text-slate-500 uppercase">Strength:</span>
-                    <span className={strength.label === 'Strong' ? 'text-[#0D9488]' : strength.label === 'Good' ? 'text-[#2563EB]' : 'text-amber-600'}>
-                      {strength.label}
-                    </span>
-                  </div>
-                  <div className="w-full h-1.5 bg-[#EEF2F8] rounded-full overflow-hidden">
-                    <div className={`h-full transition-all duration-300 ${strength.color}`} style={{ width: `${strength.score}%` }} />
-                  </div>
+            <form onSubmit={handlePasswordChange} className="space-y-5">
+              <div>
+                <label className="label-modern">
+                  Current Password <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showCurrent ? 'text' : 'password'}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="input-modern pr-10"
+                    placeholder="Enter current password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrent(!showCurrent)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
+                  >
+                    {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
-              )}
-            </div>
+              </div>
 
-            <div>
-              <label className="label-modern">
-                Confirm New Password <span className="text-rose-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type={showConfirm ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="input-modern pr-10"
-                  placeholder="Repeat new password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
+              <div>
+                <label className="label-modern">
+                  New Password <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showNew ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="input-modern pr-10"
+                    placeholder="Minimum 6 characters"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNew(!showNew)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
+                  >
+                    {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                {newPassword && (
+                  <div className="mt-2 space-y-1">
+                    <div className="flex items-center justify-between text-[10px] font-extrabold">
+                      <span className="text-slate-500 uppercase">Strength:</span>
+                      <span className={strength.label === 'Strong' ? 'text-[#0D9488]' : strength.label === 'Good' ? 'text-[#2563EB]' : 'text-amber-600'}>
+                        {strength.label}
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-[#EEF2F8] rounded-full overflow-hidden">
+                      <div className={`h-full transition-all duration-300 ${strength.color}`} style={{ width: `${strength.score}%` }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="label-modern">
+                  Confirm New Password <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showConfirm ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="input-modern pr-10"
+                    placeholder="Repeat new password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
+                  >
+                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-3 flex justify-end">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary px-6 py-2.5 text-xs space-x-2"
                 >
-                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+                  <Lock className="w-4 h-4" />
+                  <span>{loading ? 'Updating Credentials...' : 'Save & Update Password'}</span>
+                </motion.button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <div className="md:col-span-2 card-premium p-6 sm:p-8 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center space-x-2.5 text-sm font-black text-[#172554] pb-3.5 mb-5 border-b border-[#D5DFED]">
+                <span className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+                  <Lock className="w-4 h-4" />
+                </span>
+                <span>Password & Account Security Policy</span>
+              </div>
+
+              <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex items-start gap-3">
+                <ShieldAlert className="w-5 h-5 text-[#2563EB] shrink-0 mt-0.5" />
+                <div className="text-xs space-y-1.5">
+                  <p className="font-black text-[#172554]">Admin-Managed Credentials</p>
+                  <p className="text-slate-600 font-medium leading-relaxed">
+                    For security and store governance, password updates are managed exclusively by the{' '}
+                    <strong className="text-[#172554]">Sri Sai Opticals Master Administrator</strong>.
+                    If you need your login password changed or reset, please contact your administrator.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3.5 rounded-xl bg-[#EEF2F8]/80 border border-[#D5DFED]">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Assigned Role</span>
+                  <p className="font-black text-[#172554] mt-1">Sales Executive</p>
+                </div>
+                <div className="p-3.5 rounded-xl bg-[#EEF2F8]/80 border border-[#D5DFED]">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Account Status</span>
+                  <p className="font-black text-[#0D9488] mt-1">Active & Verified</p>
+                </div>
               </div>
             </div>
-
-            <div className="pt-3 flex justify-end">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                disabled={loading}
-                className="btn-primary px-6 py-2.5 text-xs space-x-2"
-              >
-                <Lock className="w-4 h-4" />
-                <span>{loading ? 'Updating Credentials...' : 'Save & Update Password'}</span>
-              </motion.button>
-            </div>
-          </form>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* 4. ADMIN-ONLY SECTION: MANAGE SALES EXECUTIVE PASSWORDS */}

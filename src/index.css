@@ -323,10 +323,10 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
+    text-align: left;
   }
   .table-modern thead th {
     padding: 0.72rem 0.65rem;
-    text-align: left;
     font-size: 0.64rem;
     font-weight: 900;
     color: #0F172A;

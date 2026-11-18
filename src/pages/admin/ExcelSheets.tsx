@@ -15,8 +15,10 @@ import {
   RefreshCw,
   Cloud,
   Lock,
+  Trash2,
+  X,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export const ExcelSheets: React.FC = () => {
@@ -29,6 +31,8 @@ export const ExcelSheets: React.FC = () => {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<UploadedSheetResponse | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     // Load all users (Admin + all Sales Executives) for complete filtering
@@ -83,6 +87,21 @@ export const ExcelSheets: React.FC = () => {
       toast.error(err.response?.data?.message || 'Failed to download original Excel file');
     } finally {
       setDownloadingId(null);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      setDeletingId(deleteTarget.id);
+      await excelApi.deleteUploadedSheet(deleteTarget.id);
+      setSheets((prev) => prev.filter((item) => item.id !== deleteTarget.id));
+      toast.success(`Deleted "${deleteTarget.originalFileName}" from Excel Sheets`);
+      setDeleteTarget(null);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to delete Excel sheet');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -248,31 +267,35 @@ export const ExcelSheets: React.FC = () => {
             <table className="table-modern">
               <thead>
                 <tr>
-                  <th className="w-10">#</th>
+                  <th className="w-10 text-center">#</th>
                   <th>Executive</th>
                   <th>Excel File</th>
                   <th>Uploaded</th>
-                  <th>Size</th>
-                  <th>Status</th>
-                  <th>Records</th>
-                  <th className="text-right">Action</th>
+                  <th className="text-right">Size</th>
+                  <th className="text-center">Status</th>
+                  <th className="text-center">Records</th>
+                  <th className="text-center">Download</th>
+                  <th className="text-center">Delete</th>
                 </tr>
               </thead>
               <tbody>
                 {sheets.map((sheet, index) => (
                   <tr key={sheet.id}>
-                    <td className="font-mono font-bold text-slate-400">{index + 1}</td>
-                    <td className="max-w-[135px]">
+                    <td className="text-center font-mono font-bold text-slate-400">{index + 1}</td>
+                    <td className="whitespace-nowrap">
                       <div className="flex items-center space-x-2 min-w-0">
                         <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#172554] to-[#2563EB] text-white font-black text-[11px] flex items-center justify-center shadow-xs shrink-0">
                           {sheet.salespersonName?.charAt(0) || 'S'}
                         </div>
-                        <span className="font-extrabold text-[#172554] truncate" title={sheet.salespersonName}>
+                        <span
+                          className="font-extrabold text-[#172554] max-w-[160px] truncate"
+                          title={sheet.salespersonName}
+                        >
                           {sheet.salespersonName}
                         </span>
                       </div>
                     </td>
-                    <td className="max-w-[200px]">
+                    <td className="max-w-[190px]">
                       <div className="flex items-center space-x-2 min-w-0">
                         <FileSpreadsheet className="w-4 h-4 text-[#0D9488] shrink-0" />
                         <div className="min-w-0">
@@ -295,10 +318,10 @@ export const ExcelSheets: React.FC = () => {
                       <p className="font-bold text-[#172554] text-xs">{sheet.uploadDate}</p>
                       <p className="font-mono text-[10px] text-slate-500 font-semibold">{sheet.uploadTime}</p>
                     </td>
-                    <td className="font-mono text-xs text-slate-600 font-bold whitespace-nowrap">
+                    <td className="text-right font-mono text-xs text-slate-600 font-bold whitespace-nowrap">
                       {formatFileSize(sheet.fileSize)}
                     </td>
-                    <td className="whitespace-nowrap">
+                    <td className="text-center whitespace-nowrap">
                       {sheet.status === 'SUCCESS' ? (
                         <span className="badge-delivered">
                           <CheckCircle2 className="w-3 h-3" />
@@ -316,7 +339,7 @@ export const ExcelSheets: React.FC = () => {
                         </span>
                       )}
                     </td>
-                    <td className="whitespace-nowrap">
+                    <td className="text-center whitespace-nowrap">
                       <div className="text-xs">
                         <span className="font-black text-[#0D9488]">{sheet.successCount}</span>
                         <span className="text-slate-400"> / {sheet.totalRows}</span>
@@ -327,16 +350,30 @@ export const ExcelSheets: React.FC = () => {
                         )}
                       </div>
                     </td>
-                    <td className="text-right whitespace-nowrap">
+                    <td className="text-center whitespace-nowrap">
                       <motion.button
                         whileHover={{ scale: 1.04 }}
                         whileTap={{ scale: 0.96 }}
                         onClick={() => handleDownload(sheet)}
                         disabled={downloadingId === sheet.id}
-                        className="btn-primary py-1.5 px-3 text-xs space-x-1"
+                        className="btn-primary py-1.5 px-2.5 text-xs space-x-1"
+                        title="Download Original Excel File"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>{downloadingId === sheet.id ? '...' : 'Download'}</span>
+                      </motion.button>
+                    </td>
+                    <td className="text-center whitespace-nowrap">
+                      <motion.button
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.94 }}
+                        onClick={() => setDeleteTarget(sheet)}
+                        disabled={deletingId === sheet.id}
+                        title="Delete Excel Sheet"
+                        className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white border border-rose-200 hover:border-rose-600 text-xs font-extrabold transition-all shadow-xs disabled:opacity-50"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
                       </motion.button>
                     </td>
                   </tr>
@@ -346,6 +383,69 @@ export const ExcelSheets: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Excel Sheet Confirmation Modal */}
+      <AnimatePresence>
+        {deleteTarget && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94, y: 14 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 10 }}
+              transition={{ type: 'spring', stiffness: 360, damping: 28 }}
+              className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl border-2 border-[#CFDCEB] relative"
+            >
+              <div className="h-1.5 w-full bg-gradient-to-r from-rose-500 to-red-600" />
+              <div className="p-6">
+                <button
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={deletingId === deleteTarget.id}
+                  className="absolute top-4 right-4 text-slate-500 hover:text-rose-600 p-1.5 rounded-xl bg-[#EEF2F8] hover:bg-rose-50 border border-[#D5DFED] transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+
+                <div className="flex items-start gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0">
+                    <Trash2 className="w-5 h-5" />
+                  </div>
+                  <div className="pr-6">
+                    <h3 className="text-base font-black text-[#172554]">Delete Excel Sheet?</h3>
+                    <p className="text-xs text-slate-600 font-medium mt-1 leading-relaxed">
+                      This will permanently remove{' '}
+                      <strong className="text-[#172554] break-all">{deleteTarget.originalFileName}</strong>{' '}
+                      from Vercel Blob Private Storage and the Excel Sheets archive.
+                    </p>
+                    <p className="text-[11px] text-slate-500 font-semibold mt-2">
+                      Note: Orders already imported into the Orders Ledger will not be deleted.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-6 flex items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTarget(null)}
+                    disabled={deletingId === deleteTarget.id}
+                    className="btn-secondary py-2 px-4 text-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmDelete}
+                    disabled={deletingId === deleteTarget.id}
+                    className="btn-danger py-2 px-4 text-xs space-x-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{deletingId === deleteTarget.id ? 'Deleting...' : 'Delete Sheet'}</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
