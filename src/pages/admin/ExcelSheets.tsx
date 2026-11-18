@@ -12,10 +12,9 @@ import {
   AlertTriangle,
   XCircle,
   FileSpreadsheet,
-  User,
   RefreshCw,
-  Clock,
-  Sparkles,
+  Cloud,
+  Lock,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -23,7 +22,7 @@ import toast from 'react-hot-toast';
 export const ExcelSheets: React.FC = () => {
   const [sheets, setSheets] = useState<UploadedSheetResponse[]>([]);
   const [loading, setLoading] = useState(true);
-  const [salespersons, setSalespersons] = useState<UserResponse[]>([]);
+  const [allUsers, setAllUsers] = useState<UserResponse[]>([]);
   const [search, setSearch] = useState('');
   const [salespersonId, setSalespersonId] = useState('');
   const [status, setStatus] = useState('');
@@ -32,7 +31,12 @@ export const ExcelSheets: React.FC = () => {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   useEffect(() => {
-    adminApi.getSalespersons().then((res) => setSalespersons(res.data.data)).catch(() => {});
+    // Load all users (Admin + all Sales Executives) for complete filtering
+    adminApi.getUsers()
+      .then((res) => setAllUsers(res.data.data))
+      .catch(() => {
+        adminApi.getSalespersons().then((res) => setAllUsers(res.data.data)).catch(() => {});
+      });
   }, []);
 
   const fetchSheets = async () => {
@@ -46,7 +50,7 @@ export const ExcelSheets: React.FC = () => {
         dateTo: dateTo || undefined,
       });
       setSheets(res.data.data);
-    } catch (err: any) {
+    } catch {
       toast.error('Failed to load uploaded Excel sheets');
     } finally {
       setLoading(false);
@@ -73,9 +77,10 @@ export const ExcelSheets: React.FC = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
-      toast.success(`Downloaded "${file.originalFileName}"`);
+      window.URL.revokeObjectURL(url);
+      toast.success(`Downloaded "${file.originalFileName}" securely from Vercel Blob`);
     } catch (err: any) {
-      toast.error('Failed to download original Excel file');
+      toast.error(err.response?.data?.message || 'Failed to download original Excel file');
     } finally {
       setDownloadingId(null);
     }
@@ -90,42 +95,49 @@ export const ExcelSheets: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="card-premium p-6 bg-gradient-to-r from-[#172554] via-[#1e3a8a] to-[#0d9488] text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="p-2 rounded-xl bg-white/10 text-teal-300">
+      <div className="page-banner p-6 text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="pointer-events-none absolute -right-12 -top-12 w-48 h-48 rounded-full bg-teal-400/20 blur-3xl" />
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="p-2 rounded-xl bg-white/15 border border-white/25 text-teal-200">
               <FolderArchive className="w-5 h-5" />
             </span>
-            <span className="text-[11px] font-black uppercase tracking-wider text-teal-300">
-              Master Admin Archive
+            <span className="text-[11px] font-black uppercase tracking-wider text-teal-200">
+              Master Admin Private Cloud Archive
+            </span>
+            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-white/15 border border-white/25 text-blue-100">
+              <Lock className="w-2.5 h-2.5" />
+              Vercel Blob Private
             </span>
           </div>
-          <h1 className="text-2xl font-black mt-2 tracking-tight">Sales Executive Excel Sheets</h1>
-          <p className="text-xs text-blue-100 mt-1 max-w-xl">
-            Access, audit, and download the exact original Excel sheets uploaded by Sales Executives. All original filenames and row data are preserved.
+          <h1 className="text-2xl font-black mt-2 tracking-tight">Excel Sheets Cloud Vault</h1>
+          <p className="text-xs text-blue-100/90 mt-1 max-w-xl font-medium">
+            View, audit, and securely download all original Excel spreadsheets uploaded by Admin and Sales Executives from Vercel Blob Private Storage.
           </p>
         </div>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={fetchSheets}
-          className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition-all self-start md:self-auto"
+          className="relative z-10 inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 text-white font-extrabold text-xs border border-white/25 transition-all self-start md:self-auto"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Refresh Archive</span>
-        </button>
+        </motion.button>
       </div>
 
       {/* Search & Filter Bar */}
       <div className="card-premium p-5">
         <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 items-end">
           <div className="lg:col-span-2">
-            <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">Search File or Executive</label>
+            <label className="label-modern">Search File or Staff Member</label>
             <div className="relative">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by filename or salesperson name..."
+                placeholder="Search by original filename or staff name..."
                 className="input-modern pr-10"
               />
               <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
@@ -133,25 +145,27 @@ export const ExcelSheets: React.FC = () => {
           </div>
 
           <div>
-            <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">Sales Executive</label>
+            <label className="label-modern">Uploaded By</label>
             <select
               value={salespersonId}
               onChange={(e) => setSalespersonId(e.target.value)}
-              className="input-modern cursor-pointer"
+              className="input-modern cursor-pointer font-bold"
             >
-              <option value="">All Sales Executives</option>
-              {salespersons.map((sp) => (
-                <option key={sp.id} value={sp.id}>{sp.fullName}</option>
+              <option value="">All Users (Admin & Sales)</option>
+              {allUsers.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.fullName} ({u.role === 'ADMIN' ? 'Admin' : 'Sales'})
+                </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">Import Status</label>
+            <label className="label-modern">Import Status</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="input-modern cursor-pointer"
+              className="input-modern cursor-pointer font-bold"
             >
               <option value="">All Statuses</option>
               <option value="SUCCESS">100% Success</option>
@@ -181,35 +195,42 @@ export const ExcelSheets: React.FC = () => {
           </div>
         </form>
 
-        {/* Date presets */}
         <div className="mt-4 pt-3.5 border-t border-[#D5DFED] flex flex-wrap items-center gap-3 text-xs">
           <div className="flex items-center space-x-2">
-            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span className="font-bold text-slate-600">Upload Date Range:</span>
+            <Calendar className="w-3.5 h-3.5 text-[#2563EB]" />
+            <span className="font-extrabold text-[#172554]">Upload Date Range:</span>
           </div>
           <input
             type="date"
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
-            className="px-2.5 py-1 bg-white border border-[#D5DFED] rounded-lg text-xs font-semibold text-slate-700"
+            className="input-modern py-1.5 px-2.5 text-xs w-auto bg-white"
           />
-          <span className="text-slate-400">to</span>
+          <span className="text-slate-400 font-bold">to</span>
           <input
             type="date"
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
-            className="px-2.5 py-1 bg-white border border-[#D5DFED] rounded-lg text-xs font-semibold text-slate-700"
+            className="input-modern py-1.5 px-2.5 text-xs w-auto bg-white"
           />
         </div>
       </div>
 
       {/* Table of Uploaded Excel Sheets */}
       <div className="card-premium overflow-hidden">
-        <div className="p-4 bg-slate-50 border-b border-[#D5DFED] flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <FileSpreadsheet className="w-4 h-4 text-[#2563EB]" />
-            <h3 className="font-black text-sm text-[#172554]">Archived Uploaded Excel Files ({sheets.length})</h3>
+        <div className="p-4 bg-gradient-to-r from-[#F8FAFE] to-[#EEF2F8]/80 border-b border-[#D5DFED] flex items-center justify-between">
+          <div className="flex items-center space-x-2.5">
+            <span className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center text-[#2563EB]">
+              <FileSpreadsheet className="w-4 h-4" />
+            </span>
+            <h3 className="font-black text-sm text-[#172554]">
+              Cloud Archived Excel Files ({sheets.length})
+            </h3>
           </div>
+          <span className="badge-partial">
+            <Cloud className="w-3 h-3" />
+            Private Blob Stream
+          </span>
         </div>
 
         {loading ? (
@@ -217,96 +238,108 @@ export const ExcelSheets: React.FC = () => {
         ) : sheets.length === 0 ? (
           <div className="py-16 text-center text-slate-400">
             <FolderArchive className="w-12 h-12 mx-auto mb-2 text-slate-300 stroke-1" />
-            <p className="text-sm font-bold text-slate-600">No uploaded Excel files found</p>
-            <p className="text-xs text-slate-400 mt-1">Excel files imported by Sales Executives will automatically appear here for download.</p>
+            <p className="text-sm font-black text-[#172554]">No uploaded Excel files found</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Excel files uploaded via Bulk Excel Import are stored in Vercel Blob Private Storage and will appear here.
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="table-modern">
               <thead>
                 <tr>
-                  <th className="w-12">S.No</th>
-                  <th>Sales Executive</th>
-                  <th>Original File Name</th>
-                  <th>Upload Date & Time</th>
-                  <th>Records Scanned</th>
-                  <th>Import Status</th>
-                  <th>File Size</th>
-                  <th className="text-right">Download Original</th>
+                  <th className="w-10">#</th>
+                  <th>Executive</th>
+                  <th>Excel File</th>
+                  <th>Uploaded</th>
+                  <th>Size</th>
+                  <th>Status</th>
+                  <th>Records</th>
+                  <th className="text-right">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {sheets.map((sheet, index) => (
-                  <motion.tr
-                    key={sheet.id}
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                  >
-                    <td className="font-bold text-slate-400">{index + 1}</td>
-                    <td>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-7 h-7 rounded-lg bg-blue-100 text-[#2563EB] font-black text-xs flex items-center justify-center">
+                  <tr key={sheet.id}>
+                    <td className="font-mono font-bold text-slate-400">{index + 1}</td>
+                    <td className="max-w-[135px]">
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#172554] to-[#2563EB] text-white font-black text-[11px] flex items-center justify-center shadow-xs shrink-0">
                           {sheet.salespersonName?.charAt(0) || 'S'}
                         </div>
-                        <span className="font-bold text-[#172554]">{sheet.salespersonName}</span>
+                        <span className="font-extrabold text-[#172554] truncate" title={sheet.salespersonName}>
+                          {sheet.salespersonName}
+                        </span>
                       </div>
                     </td>
-                    <td>
-                      <div className="flex items-center space-x-2">
-                        <FileSpreadsheet className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                        <span className="font-bold text-slate-800 break-all">{sheet.originalFileName}</span>
+                    <td className="max-w-[200px]">
+                      <div className="flex items-center space-x-2 min-w-0">
+                        <FileSpreadsheet className="w-4 h-4 text-[#0D9488] shrink-0" />
+                        <div className="min-w-0">
+                          <span
+                            className="font-extrabold text-[#172554] truncate block"
+                            title={sheet.originalFileName}
+                          >
+                            {sheet.originalFileName}
+                          </span>
+                          {sheet.storageProvider === 'VERCEL_BLOB' && (
+                            <span className="text-[10px] font-bold text-[#2563EB] inline-flex items-center gap-1">
+                              <Cloud className="w-2.5 h-2.5" />
+                              Private Blob
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
-                    <td>
-                      <div className="text-xs">
-                        <p className="font-bold text-slate-700">{sheet.uploadDate}</p>
-                        <p className="text-[10px] text-slate-400 font-semibold">{sheet.uploadTime}</p>
-                      </div>
+                    <td className="whitespace-nowrap">
+                      <p className="font-bold text-[#172554] text-xs">{sheet.uploadDate}</p>
+                      <p className="font-mono text-[10px] text-slate-500 font-semibold">{sheet.uploadTime}</p>
                     </td>
-                    <td>
-                      <div className="text-xs">
-                        <span className="font-black text-[#172554]">{sheet.totalRows}</span> rows
-                        <span className="text-[11px] text-emerald-600 font-bold ml-1.5">({sheet.successCount} ok)</span>
-                        {sheet.errorCount > 0 && (
-                          <span className="text-[11px] text-rose-600 font-bold ml-1">({sheet.errorCount} rejected)</span>
-                        )}
-                      </div>
+                    <td className="font-mono text-xs text-slate-600 font-bold whitespace-nowrap">
+                      {formatFileSize(sheet.fileSize)}
                     </td>
-                    <td>
+                    <td className="whitespace-nowrap">
                       {sheet.status === 'SUCCESS' ? (
-                        <span className="badge-delivered inline-flex items-center gap-1">
+                        <span className="badge-delivered">
                           <CheckCircle2 className="w-3 h-3" />
-                          <span>100% Imported</span>
+                          <span>Imported</span>
                         </span>
                       ) : sheet.status === 'PARTIAL' ? (
-                        <span className="badge-pending inline-flex items-center gap-1">
+                        <span className="badge-pending">
                           <AlertTriangle className="w-3 h-3" />
-                          <span>Partial Rows</span>
+                          <span>Partial</span>
                         </span>
                       ) : (
-                        <span className="badge-overdue inline-flex items-center gap-1">
+                        <span className="badge-overdue">
                           <XCircle className="w-3 h-3" />
                           <span>Failed</span>
                         </span>
                       )}
                     </td>
-                    <td className="font-mono text-xs text-slate-500 font-semibold">
-                      {formatFileSize(sheet.fileSize)}
+                    <td className="whitespace-nowrap">
+                      <div className="text-xs">
+                        <span className="font-black text-[#0D9488]">{sheet.successCount}</span>
+                        <span className="text-slate-400"> / {sheet.totalRows}</span>
+                        {sheet.errorCount > 0 && (
+                          <span className="text-[10px] text-rose-600 font-extrabold block">
+                            ({sheet.errorCount} rejected)
+                          </span>
+                        )}
+                      </div>
                     </td>
-                    <td className="text-right">
+                    <td className="text-right whitespace-nowrap">
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.96 }}
                         onClick={() => handleDownload(sheet)}
                         disabled={downloadingId === sheet.id}
-                        className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#0d9488] hover:from-[#1d4ed8] hover:to-[#0f766e] text-white font-bold text-xs shadow-sm transition-all disabled:opacity-50"
+                        className="btn-primary py-1.5 px-3 text-xs space-x-1"
                       >
                         <Download className="w-3.5 h-3.5" />
-                        <span>{downloadingId === sheet.id ? 'Downloading...' : 'Download Original'}</span>
+                        <span>{downloadingId === sheet.id ? '...' : 'Download'}</span>
                       </motion.button>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>

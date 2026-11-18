@@ -283,6 +283,9 @@ export interface UploadedSheetResponse {
   id: string;
   originalFileName: string;
   storedFileName: string;
+  blobPathname?: string;
+  blobUrl?: string;
+  storageProvider?: 'VERCEL_BLOB' | 'LOCAL';
   fileSize: number;
   mimeType: string;
   salespersonId: string;
@@ -301,4 +304,5 @@ export interface ImportResultResponse {
   successCount: number;
   errorCount: number;
   errors: { rowNumber: number; field: string; error: string; rawValue?: any }[];
+  uploadedFile?: UploadedSheetResponse;
 }

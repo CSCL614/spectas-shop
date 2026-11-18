@@ -20,8 +20,8 @@ import {
   ShoppingBag,
   CreditCard,
   RefreshCw,
-  Sparkles
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export const DailyStatement: React.FC = () => {
@@ -56,31 +56,26 @@ export const DailyStatement: React.FC = () => {
 
     try {
       setGeneratingPdf(true);
-      // Use landscape A4 for optimal readability of the 12 columns
       const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4',
       });
 
-      const primaryColor = [15, 23, 42]; // Slate 900
-      const accentColor = [37, 99, 235]; // Blue 600
+      const primaryColor = [23, 37, 84];
 
-      // Header Banner
       doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
       doc.rect(0, 0, 297, 24, 'F');
 
-      // Shop Name & Title
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(16);
-      doc.text('SPECTAS SHOP', 14, 11);
+      doc.text('SRI SAI OPTICALS', 14, 11);
 
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('Smart Optical Business Management System', 14, 18);
 
-      // Statement Info (Right aligned)
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(13);
       doc.text('DAILY BUSINESS STATEMENT', 283, 11, { align: 'right' });
@@ -89,35 +84,30 @@ export const DailyStatement: React.FC = () => {
       doc.setFont('helvetica', 'normal');
       doc.text(`Statement Date: ${selectedDate} | Generated: ${new Date().toLocaleTimeString()}`, 283, 18, { align: 'right' });
 
-      // Daily KPI Summary Box
-      doc.setFillColor(248, 250, 252); // Slate 50
-      doc.setDrawColor(226, 232, 240); // Slate 200
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(213, 223, 237);
       doc.roundedRect(14, 28, 269, 22, 2, 2, 'FD');
 
       doc.setTextColor(100, 116, 139);
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
 
-      // Metric columns in PDF header box
       const colWidth = 269 / 6;
       const yLabel = 34;
       const yValue = 44;
 
-      // Col 1: Orders
       doc.text('TOTAL ORDERS', 14 + 4, yLabel);
-      doc.setTextColor(15, 23, 42);
+      doc.setTextColor(23, 37, 84);
       doc.setFontSize(12);
       doc.text(`${statement.totalOrders}`, 14 + 4, yValue);
 
-      // Col 2: Total Selling MRP
       doc.setTextColor(100, 116, 139);
       doc.setFontSize(8);
       doc.text('SELLING VALUE (MRP)', 14 + colWidth + 2, yLabel);
-      doc.setTextColor(15, 23, 42);
+      doc.setTextColor(23, 37, 84);
       doc.setFontSize(11);
       doc.text(`Rs. ${statement.totalSellingAmount.toLocaleString('en-IN')}`, 14 + colWidth + 2, yValue);
 
-      // Col 3: Total Discount
       doc.setTextColor(100, 116, 139);
       doc.setFontSize(8);
       doc.text('TOTAL DISCOUNT', 14 + colWidth * 2 + 2, yLabel);
@@ -125,15 +115,13 @@ export const DailyStatement: React.FC = () => {
       doc.setFontSize(11);
       doc.text(`Rs. ${statement.totalDiscountGiven.toLocaleString('en-IN')}`, 14 + colWidth * 2 + 2, yValue);
 
-      // Col 4: Daily Collection
       doc.setTextColor(100, 116, 139);
       doc.setFontSize(8);
       doc.text('ACTUAL COLLECTION', 14 + colWidth * 3 + 2, yLabel);
-      doc.setTextColor(5, 150, 105);
+      doc.setTextColor(13, 148, 136);
       doc.setFontSize(12);
       doc.text(`Rs. ${statement.totalCollection.toLocaleString('en-IN')}`, 14 + colWidth * 3 + 2, yValue);
 
-      // Col 5: Pending Balance
       doc.setTextColor(100, 116, 139);
       doc.setFontSize(8);
       doc.text('REMAINING BALANCE', 14 + colWidth * 4 + 2, yLabel);
@@ -141,7 +129,6 @@ export const DailyStatement: React.FC = () => {
       doc.setFontSize(11);
       doc.text(`Rs. ${statement.remainingBalance.toLocaleString('en-IN')}`, 14 + colWidth * 4 + 2, yValue);
 
-      // Col 6: Profit (Admin) or Deliveries
       doc.setTextColor(100, 116, 139);
       doc.setFontSize(8);
       if (isAdmin) {
@@ -151,28 +138,16 @@ export const DailyStatement: React.FC = () => {
         doc.text(`Rs. ${statement.totalProfit.toLocaleString('en-IN')}`, 14 + colWidth * 5 + 2, yValue);
       } else {
         doc.text('DELIVERIES (DONE/PEND)', 14 + colWidth * 5 + 2, yLabel);
-        doc.setTextColor(15, 23, 42);
+        doc.setTextColor(23, 37, 84);
         doc.setFontSize(11);
         doc.text(`${statement.deliveredOrders} / ${statement.pendingDeliveries}`, 14 + colWidth * 5 + 2, yValue);
       }
 
-      // Prepare Table Data (12 columns)
-      const tableHeaders = [
-        [
-          'S.No',
-          'Order ID',
-          'Patient Name',
-          'Phone',
-          'Company Name',
-          'Selling Price',
-          'Discount',
-          'Final Amount',
-          'Advance Paid',
-          'Balance Amount',
-          'Payment Method',
-          'Delivery Status',
-        ],
-      ];
+      const tableHeaders = [[
+        'S.No', 'Sticker No', 'Patient Name', 'Phone', 'Company Name', 'Handled By',
+        'Selling Price', 'Discount', 'Final Amount', 'Advance Paid',
+        'Balance Amount', 'Payment Method', 'Delivery Status',
+      ]];
 
       const tableRows = (statement.orders || []).map((o: SaleResponse, index: number) => {
         const origPrice = o.originalSellingPrice || o.sellingPrice;
@@ -186,6 +161,7 @@ export const DailyStatement: React.FC = () => {
           o.customerName,
           o.customerMobile,
           o.companyName,
+          o.salespersonName || '—',
           `Rs. ${origPrice.toLocaleString('en-IN')}`,
           `Rs. ${discountStr}`,
           `Rs. ${o.sellingPrice.toLocaleString('en-IN')}`,
@@ -196,18 +172,15 @@ export const DailyStatement: React.FC = () => {
         ];
       });
 
-      // Bottom Totals Row
-      const footRow = [
-        [
-          { content: 'TOTALS', colSpan: 5, styles: { halign: 'center', fontStyle: 'bold' } },
-          { content: `Rs. ${statement.totalSellingAmount.toLocaleString('en-IN')}`, styles: { fontStyle: 'bold' } },
-          { content: `Rs. ${statement.totalDiscountGiven.toLocaleString('en-IN')}`, styles: { fontStyle: 'bold', textColor: [225, 29, 72] } },
-          { content: `Rs. ${(statement.totalSellingAmount - statement.totalDiscountGiven).toLocaleString('en-IN')}`, styles: { fontStyle: 'bold' } },
-          { content: `Rs. ${statement.totalAdvanceCollected.toLocaleString('en-IN')}`, styles: { fontStyle: 'bold', textColor: [5, 150, 105] } },
-          { content: `Rs. ${statement.remainingBalance.toLocaleString('en-IN')}`, styles: { fontStyle: 'bold', textColor: [180, 83, 9] } },
-          { content: `Total Collected: Rs. ${statement.totalCollection.toLocaleString('en-IN')}`, colSpan: 2, styles: { fontStyle: 'bold', textColor: [5, 150, 105] } },
-        ],
-      ];
+      const footRow = [[
+        { content: 'TOTALS', colSpan: 6, styles: { halign: 'center', fontStyle: 'bold' } },
+        { content: `Rs. ${statement.totalSellingAmount.toLocaleString('en-IN')}`, styles: { fontStyle: 'bold' } },
+        { content: `Rs. ${statement.totalDiscountGiven.toLocaleString('en-IN')}`, styles: { fontStyle: 'bold', textColor: [225, 29, 72] } },
+        { content: `Rs. ${(statement.totalSellingAmount - statement.totalDiscountGiven).toLocaleString('en-IN')}`, styles: { fontStyle: 'bold' } },
+        { content: `Rs. ${statement.totalAdvanceCollected.toLocaleString('en-IN')}`, styles: { fontStyle: 'bold', textColor: [13, 148, 136] } },
+        { content: `Rs. ${statement.remainingBalance.toLocaleString('en-IN')}`, styles: { fontStyle: 'bold', textColor: [180, 83, 9] } },
+        { content: `Total Collected: Rs. ${statement.totalCollection.toLocaleString('en-IN')}`, colSpan: 2, styles: { fontStyle: 'bold', textColor: [13, 148, 136] } },
+      ]];
 
       autoTable(doc, {
         head: tableHeaders,
@@ -216,59 +189,25 @@ export const DailyStatement: React.FC = () => {
         startY: 54,
         margin: { left: 14, right: 14, bottom: 20 },
         theme: 'grid',
-        headStyles: {
-          fillColor: [30, 41, 59],
-          textColor: [255, 255, 255],
-          fontSize: 8,
-          fontStyle: 'bold',
-          halign: 'center',
-        },
-        footStyles: {
-          fillColor: [241, 245, 249],
-          textColor: [15, 23, 42],
-          fontSize: 8,
-          fontStyle: 'bold',
-        },
-        bodyStyles: {
-          fontSize: 8,
-          textColor: [51, 65, 85],
-        },
-        alternateRowStyles: {
-          fillColor: [248, 250, 252],
-        },
-        columnStyles: {
-          0: { halign: 'center', cellWidth: 10 },
-          1: { halign: 'center', fontStyle: 'bold', cellWidth: 20 },
-          2: { cellWidth: 32 },
-          3: { halign: 'center', cellWidth: 24 },
-          4: { cellWidth: 28 },
-          5: { halign: 'right', cellWidth: 24 },
-          6: { halign: 'right', cellWidth: 22 },
-          7: { halign: 'right', fontStyle: 'bold', cellWidth: 24 },
-          8: { halign: 'right', cellWidth: 24 },
-          9: { halign: 'right', fontStyle: 'bold', cellWidth: 24 },
-          10: { halign: 'center', cellWidth: 23 },
-          11: { halign: 'center', cellWidth: 20 },
-        },
+        headStyles: { fillColor: [23, 37, 84], textColor: [255, 255, 255], fontSize: 8, fontStyle: 'bold', halign: 'center' },
+        footStyles: { fillColor: [238, 242, 248], textColor: [23, 37, 84], fontSize: 8, fontStyle: 'bold' },
+        bodyStyles: { fontSize: 8, textColor: [51, 65, 85] },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
         didDrawPage: (data) => {
-          // Bottom Page Number Footer
           const pageCount = (doc as any).internal.getNumberOfPages();
-          const pageCurrent = data.pageNumber;
           doc.setFontSize(8);
           doc.setTextColor(148, 163, 184);
           doc.setFont('helvetica', 'normal');
           doc.text(
-            `SPECTAS SHOP Optical ERP • Daily Business Statement (${selectedDate}) • Page ${pageCurrent} of ${pageCount}`,
-            148.5,
-            205,
-            { align: 'center' }
+            `Sri Sai Opticals ERP • Daily Business Statement (${selectedDate}) • Page ${data.pageNumber} of ${pageCount}`,
+            148.5, 205, { align: 'center' }
           );
         },
       });
 
-      doc.save(`Spectas_Shop_Daily_Statement_${selectedDate}.pdf`);
+      doc.save(`Sri_Sai_Opticals_Daily_Statement_${selectedDate}.pdf`);
       toast.success('Daily Statement PDF downloaded successfully!');
-    } catch (err: any) {
+    } catch (err) {
       console.error('PDF generation error:', err);
       toast.error('Failed to generate PDF');
     } finally {
@@ -276,41 +215,36 @@ export const DailyStatement: React.FC = () => {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
     <div className="space-y-6">
-      {/* Page Title & Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <div className="p-2 bg-blue-100 text-blue-700 rounded-xl">
-              <FileText className="w-5 h-5" />
-            </div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Daily Business Statement</h1>
+      {/* Page Header & Actions */}
+      <div className="card-premium p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-t-4 border-t-[#2563EB]">
+        <div className="flex items-start space-x-3.5">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#172554] via-[#2563EB] to-[#0D9488] text-white flex items-center justify-center shadow-md shadow-blue-500/25 shrink-0">
+            <FileText className="w-5 h-5" />
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Complete reconciliation of daily optical sales, discounts, payment transactions, and collections.
-          </p>
+          <div>
+            <h1 className="text-xl font-black text-[#172554] tracking-tight">Daily Business Statement</h1>
+            <p className="text-xs font-medium text-slate-500 mt-0.5">
+              Complete reconciliation of daily optical sales, discounts, payment transactions, and collections.
+            </p>
+          </div>
         </div>
 
-        {/* Date Selector & Action Buttons */}
         <div className="flex items-center flex-wrap gap-2.5">
-          <div className="flex items-center bg-white border border-slate-200 rounded-xl px-3 py-1.5 shadow-sm">
-            <Calendar className="w-4 h-4 text-slate-400 mr-2" />
+          <div className="flex items-center bg-[#EEF2F8]/80 border-[1.5px] border-[#D5DFED] rounded-xl px-3 py-2 shadow-xs">
+            <Calendar className="w-4 h-4 text-[#2563EB] mr-2" />
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="text-xs font-bold text-slate-800 outline-none cursor-pointer bg-transparent"
+              className="text-xs font-extrabold text-[#172554] outline-none cursor-pointer bg-transparent"
             />
           </div>
 
           <button
             onClick={() => fetchStatement(selectedDate)}
-            className="btn-secondary py-1.5 px-3 text-xs flex items-center space-x-1.5"
+            className="btn-secondary py-2 px-3 text-xs space-x-1.5"
             title="Refresh Data"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -318,8 +252,8 @@ export const DailyStatement: React.FC = () => {
           </button>
 
           <button
-            onClick={handlePrint}
-            className="btn-secondary py-1.5 px-3 text-xs flex items-center space-x-1.5"
+            onClick={() => window.print()}
+            className="btn-secondary py-2 px-3.5 text-xs space-x-1.5"
           >
             <Printer className="w-3.5 h-3.5" />
             <span>Print</span>
@@ -328,7 +262,7 @@ export const DailyStatement: React.FC = () => {
           <button
             onClick={handleDownloadPdf}
             disabled={generatingPdf || loading || !statement}
-            className="btn-primary py-1.5 px-4 text-xs flex items-center space-x-1.5 shadow-sm"
+            className="btn-primary py-2 px-4 text-xs space-x-1.5"
           >
             {generatingPdf ? (
               <>
@@ -346,140 +280,134 @@ export const DailyStatement: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="py-24 flex justify-center">
-          <LoadingSpinner size="lg" />
-        </div>
+        <div className="py-24 flex justify-center"><LoadingSpinner size="lg" /></div>
       ) : !statement ? (
-        <div className="card-premium p-12 text-center text-slate-400">
+        <div className="card-premium p-12 text-center text-slate-400 font-semibold">
           No statement data available for the selected date.
         </div>
       ) : (
         <>
           {/* Daily Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {/* 1. Total Orders */}
-            <div className="card-premium p-4">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+            <motion.div whileHover={{ y: -3, scale: 1.02 }} className="card-stat p-4">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#172554] to-[#2563EB]" />
+              <div className="flex items-center justify-between text-slate-500 text-xs font-extrabold">
                 <span>Orders</span>
-                <ShoppingBag className="w-4 h-4 text-blue-600" />
+                <span className="w-7 h-7 rounded-lg bg-blue-50 text-[#2563EB] flex items-center justify-center"><ShoppingBag className="w-3.5 h-3.5" /></span>
               </div>
-              <p className="text-2xl font-black text-slate-900 mt-2">{statement.totalOrders}</p>
-              <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-1">
-                <span className="text-emerald-600 font-semibold">{statement.deliveredOrders} delivered</span>
+              <p className="text-2xl font-black text-[#172554] mt-2 tabular-nums">{statement.totalOrders}</p>
+              <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-1 font-bold">
+                <span className="text-[#0D9488]">{statement.deliveredOrders} delivered</span>
                 <span>•</span>
-                <span className="text-amber-600 font-semibold">{statement.pendingDeliveries} lab</span>
+                <span className="text-amber-600">{statement.pendingDeliveries} lab</span>
               </div>
-            </div>
+            </motion.div>
 
-            {/* 2. Total Selling Amount */}
-            <div className="card-premium p-4">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
+            <motion.div whileHover={{ y: -3, scale: 1.02 }} className="card-stat p-4">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2563EB] to-indigo-600" />
+              <div className="flex items-center justify-between text-slate-500 text-xs font-extrabold">
                 <span>Total MRP</span>
-                <IndianRupee className="w-4 h-4 text-indigo-600" />
+                <span className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center"><IndianRupee className="w-3.5 h-3.5" /></span>
               </div>
-              <p className="text-xl font-black text-slate-900 mt-2">{formatINR(statement.totalSellingAmount)}</p>
-              <p className="text-[10px] text-slate-400 mt-1">Gross catalogue value</p>
-            </div>
+              <p className="text-xl font-black text-[#172554] mt-2 tabular-nums">{formatINR(statement.totalSellingAmount)}</p>
+              <p className="text-[10px] text-slate-500 mt-1 font-medium">Gross catalogue value</p>
+            </motion.div>
 
-            {/* 3. Total Discount Given */}
-            <div className="card-premium p-4 border-rose-100">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-                <span>Total Discount</span>
-                <Percent className="w-4 h-4 text-rose-500" />
+            <motion.div whileHover={{ y: -3, scale: 1.02 }} className="card-stat p-4">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-pink-500" />
+              <div className="flex items-center justify-between text-slate-500 text-xs font-extrabold">
+                <span>Discount</span>
+                <span className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center"><Percent className="w-3.5 h-3.5" /></span>
               </div>
-              <p className="text-xl font-black text-rose-600 mt-2">{formatINR(statement.totalDiscountGiven)}</p>
-              <p className="text-[10px] text-rose-400 mt-1">Customer concessions</p>
-            </div>
+              <p className="text-xl font-black text-rose-600 mt-2 tabular-nums">{formatINR(statement.totalDiscountGiven)}</p>
+              <p className="text-[10px] text-rose-500 mt-1 font-medium">Customer concessions</p>
+            </motion.div>
 
-            {/* 4. Total Daily Collection */}
-            <div className="card-premium p-4 bg-emerald-50/40 border-emerald-200/80">
-              <div className="flex items-center justify-between text-emerald-700 text-xs font-bold">
-                <span>Daily Collection</span>
-                <Wallet className="w-4 h-4 text-emerald-600" />
+            <motion.div whileHover={{ y: -3, scale: 1.02 }} className="card-stat p-4 border-emerald-200 bg-emerald-50/40">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-[#0D9488]" />
+              <div className="flex items-center justify-between text-emerald-700 text-xs font-extrabold">
+                <span>Collection</span>
+                <span className="w-7 h-7 rounded-lg bg-emerald-100 text-[#0D9488] flex items-center justify-center"><Wallet className="w-3.5 h-3.5" /></span>
               </div>
-              <p className="text-xl font-black text-emerald-700 mt-2">{formatINR(statement.totalCollection)}</p>
-              <p className="text-[10px] text-emerald-600 mt-1">
-                Advance + collections today
-              </p>
-            </div>
+              <p className="text-xl font-black text-[#0D9488] mt-2 tabular-nums">{formatINR(statement.totalCollection)}</p>
+              <p className="text-[10px] text-emerald-700 mt-1 font-semibold">Received today</p>
+            </motion.div>
 
-            {/* 5. Remaining Balance */}
-            <div className="card-premium p-4">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-semibold">
-                <span>Pending Balance</span>
-                <Clock className="w-4 h-4 text-amber-500" />
+            <motion.div whileHover={{ y: -3, scale: 1.02 }} className="card-stat p-4">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
+              <div className="flex items-center justify-between text-slate-500 text-xs font-extrabold">
+                <span>Balance</span>
+                <span className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center"><Clock className="w-3.5 h-3.5" /></span>
               </div>
-              <p className="text-xl font-black text-amber-700 mt-2">{formatINR(statement.remainingBalance)}</p>
-              <p className="text-[10px] text-slate-400 mt-1">Due upon delivery</p>
-            </div>
+              <p className="text-xl font-black text-amber-700 mt-2 tabular-nums">{formatINR(statement.remainingBalance)}</p>
+              <p className="text-[10px] text-slate-500 mt-1 font-medium">Due upon delivery</p>
+            </motion.div>
 
-            {/* 6. Total Profit (Admin only or General) */}
-            <div className="card-premium p-4 bg-blue-50/40 border-blue-200/80">
-              <div className="flex items-center justify-between text-blue-800 text-xs font-bold">
-                <span>{isAdmin ? 'Total Profit' : 'Delivered'}</span>
-                {isAdmin ? <TrendingUp className="w-4 h-4 text-blue-600" /> : <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+            <motion.div whileHover={{ y: -3, scale: 1.02 }} className="card-stat p-4 border-blue-200 bg-blue-50/40">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2563EB] to-[#0D9488]" />
+              <div className="flex items-center justify-between text-[#172554] text-xs font-extrabold">
+                <span>{isAdmin ? 'Profit' : 'Delivered'}</span>
+                <span className="w-7 h-7 rounded-lg bg-blue-100 text-[#2563EB] flex items-center justify-center">
+                  {isAdmin ? <TrendingUp className="w-3.5 h-3.5" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                </span>
               </div>
-              <p className="text-xl font-black text-blue-900 mt-2">
+              <p className="text-xl font-black text-[#2563EB] mt-2 tabular-nums">
                 {isAdmin ? formatINR(statement.totalProfit) : `${statement.deliveredOrders} Orders`}
               </p>
-              <p className="text-[10px] text-blue-600 mt-1">
+              <p className="text-[10px] text-blue-700 mt-1 font-semibold">
                 {isAdmin ? `Cost: ${formatINR(statement.totalCostAmount)}` : `${statement.pendingDeliveries} Pending`}
               </p>
-            </div>
+            </motion.div>
           </div>
 
           {/* Payment Method Breakdown Bar */}
           {statement.paymentMethodTotals && Object.keys(statement.paymentMethodTotals).length > 0 && (
             <div className="card-premium p-4">
-              <h3 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+              <h3 className="text-xs font-black text-[#172554] uppercase tracking-wider mb-3 flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-[#2563EB]" />
                 <span>Collections Received by Payment Method on {formatDate(selectedDate)}</span>
               </h3>
               <div className="flex flex-wrap gap-2.5">
                 {Object.entries(statement.paymentMethodTotals).map(([method, amount]) => (
-                  <div key={method} className="flex items-center space-x-2 bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-xl text-xs">
-                    <span className="font-semibold text-slate-700">{method}:</span>
-                    <span className="font-bold text-emerald-700">{formatINR(amount as number)}</span>
+                  <div key={method} className="flex items-center space-x-2 bg-[#EEF2F8]/80 border-[1.5px] border-[#D5DFED] px-3.5 py-2 rounded-xl text-xs">
+                    <span className="font-extrabold text-[#172554]">{method}:</span>
+                    <span className="font-black text-[#0D9488] tabular-nums">{formatINR(amount as number)}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Detailed Order Table (12 columns) */}
+          {/* Detailed Order Table */}
           <div className="card-premium overflow-hidden">
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="p-4 bg-gradient-to-r from-[#F8FAFE] to-[#EEF2F8]/80 border-b border-[#D5DFED] flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900">Detailed Statement Order Breakdown</h3>
-                <p className="text-xs text-slate-400">All orders booked or payments recorded for {formatDate(selectedDate)}</p>
+                <h3 className="text-sm font-black text-[#172554]">Detailed Statement Order Breakdown</h3>
+                <p className="text-xs text-slate-500 font-medium">All orders booked or payments recorded for {formatDate(selectedDate)}</p>
               </div>
-              <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                {statement.orders.length} Records
-              </span>
+              <span className="badge-partial">{statement.orders.length} Records</span>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="table-modern">
                 <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="py-3 px-3 text-center">S.No</th>
-                    <th className="py-3 px-3">Order ID</th>
-                    <th className="py-3 px-3">Patient Name</th>
-                    <th className="py-3 px-3">Patient Phone</th>
-                    <th className="py-3 px-3">Company Name</th>
-                    <th className="py-3 px-3 text-right">Selling Price</th>
-                    <th className="py-3 px-3 text-right">Discount</th>
-                    <th className="py-3 px-3 text-right">Final Amount</th>
-                    <th className="py-3 px-3 text-right">Advance Amount</th>
-                    <th className="py-3 px-3 text-right">Balance Amount</th>
-                    <th className="py-3 px-3 text-center">Payment Method</th>
-                    <th className="py-3 px-3 text-center">Delivery Status</th>
+                  <tr>
+                    <th className="text-center w-9">#</th>
+                    <th>Sticker</th>
+                    <th>Patient</th>
+                    <th>Company</th>
+                    <th>Handled By</th>
+                    <th className="text-right">MRP / Disc</th>
+                    <th className="text-right">Final</th>
+                    <th className="text-right">Paid / Mode</th>
+                    <th className="text-right">Balance</th>
+                    <th className="text-center">Delivery</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {statement.orders.length === 0 ? (
                     <tr>
-                      <td colSpan={12} className="py-8 text-center text-slate-400 text-xs">
+                      <td colSpan={10} className="py-10 text-center text-slate-400 font-semibold">
                         No orders recorded on this date.
                       </td>
                     </tr>
@@ -487,46 +415,47 @@ export const DailyStatement: React.FC = () => {
                     statement.orders.map((o: SaleResponse, index: number) => {
                       const origPrice = o.originalSellingPrice || o.sellingPrice;
                       const hasDisc = (o.discountAmount || 0) > 0;
+                      const handlerName = o.salespersonName || '—';
                       return (
-                        <tr key={o.id} className="hover:bg-slate-50/60 transition">
-                          <td className="py-3 px-3 text-center font-mono text-slate-400">{index + 1}</td>
-                          <td className="py-3 px-3 font-mono font-bold text-blue-700">{o.stickerNumber}</td>
-                          <td className="py-3 px-3 font-semibold text-slate-900">{o.customerName}</td>
-                          <td className="py-3 px-3 font-mono text-slate-600">{o.customerMobile}</td>
-                          <td className="py-3 px-3 text-slate-700">{o.companyName}</td>
-                          <td className="py-3 px-3 text-right font-medium text-slate-700">{formatINR(origPrice)}</td>
-                          <td className="py-3 px-3 text-right">
-                            {hasDisc ? (
-                              <span className="text-rose-600 font-semibold">
-                                -{formatINR(o.discountAmount || 0)}
+                        <tr key={o.id}>
+                          <td className="text-center font-mono font-bold text-slate-400">{index + 1}</td>
+                          <td className="whitespace-nowrap"><span className="sticker-badge">{o.stickerNumber}</span></td>
+                          <td className="max-w-[140px]">
+                            <p className="font-extrabold text-[#172554] truncate" title={o.customerName}>{o.customerName}</p>
+                            <p className="font-mono text-[11px] font-semibold text-slate-500 whitespace-nowrap">{o.customerMobile}</p>
+                          </td>
+                          <td className="font-bold text-slate-700 max-w-[105px] truncate" title={o.companyName}>{o.companyName}</td>
+                          <td className="max-w-[115px]">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="w-5 h-5 rounded-md bg-gradient-to-tr from-[#172554] to-[#2563EB] text-white text-[10px] font-black flex items-center justify-center shrink-0">
+                                {handlerName.charAt(0).toUpperCase()}
                               </span>
-                            ) : (
-                              <span className="text-slate-300">₹0</span>
+                              <span className="font-extrabold text-[#172554] text-xs truncate" title={handlerName}>
+                                {handlerName}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="text-right whitespace-nowrap tabular-nums">
+                            <p className="font-semibold text-slate-700">{formatINR(origPrice)}</p>
+                            {hasDisc && (
+                              <span className="text-[10px] text-rose-600 font-bold">-{formatINR(o.discountAmount || 0)}</span>
                             )}
                           </td>
-                          <td className="py-3 px-3 text-right font-bold text-slate-900">{formatINR(o.sellingPrice)}</td>
-                          <td className="py-3 px-3 text-right font-semibold text-emerald-600">{formatINR(o.advanceAmount)}</td>
-                          <td className="py-3 px-3 text-right font-bold">
+                          <td className="text-right font-black text-[#172554] whitespace-nowrap tabular-nums">{formatINR(o.sellingPrice)}</td>
+                          <td className="text-right whitespace-nowrap tabular-nums">
+                            <p className="font-extrabold text-[#0D9488]">{formatINR(o.advanceAmount)}</p>
+                            <span className="text-[10px] font-bold text-slate-500">{o.paymentMethod || 'Cash'}</span>
+                          </td>
+                          <td className="text-right font-black whitespace-nowrap tabular-nums">
                             {o.remainingBalance > 0 ? (
-                              <span className="text-amber-700">{formatINR(o.remainingBalance)}</span>
+                              <span className="text-rose-600">{formatINR(o.remainingBalance)}</span>
                             ) : (
-                              <span className="text-emerald-600 text-[10px] bg-emerald-50 px-2 py-0.5 rounded font-bold">PAID</span>
+                              <span className="badge-delivered">PAID</span>
                             )}
                           </td>
-                          <td className="py-3 px-3 text-center">
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                              {o.paymentMethod || 'Cash'}
-                            </span>
-                          </td>
-                          <td className="py-3 px-3 text-center">
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                o.deliveryStatus === 'DELIVERED'
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : 'bg-amber-100 text-amber-800'
-                              }`}
-                            >
-                              {o.deliveryStatus}
+                          <td className="text-center whitespace-nowrap">
+                            <span className={o.deliveryStatus === 'DELIVERED' ? 'badge-delivered' : 'badge-pending'}>
+                              {o.deliveryStatus === 'DELIVERED' ? 'Delivered' : 'Pending'}
                             </span>
                           </td>
                         </tr>
@@ -538,23 +467,23 @@ export const DailyStatement: React.FC = () => {
             </div>
 
             {/* Bottom Totals Bar */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Collection</span>
-                  <span className="text-lg font-black text-emerald-600 mt-1 block">{formatINR(statement.totalCollection)}</span>
+            <div className="p-4 bg-[#EEF2F8]/70 border-t border-[#D5DFED]">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="p-3.5 bg-white rounded-xl border-[1.5px] border-[#D5DFED] shadow-xs">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Total Collection</span>
+                  <span className="text-lg font-black text-[#0D9488] mt-1 block tabular-nums">{formatINR(statement.totalCollection)}</span>
                 </div>
-                <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Pending Balance</span>
-                  <span className="text-lg font-black text-amber-700 mt-1 block">{formatINR(statement.remainingBalance)}</span>
+                <div className="p-3.5 bg-white rounded-xl border-[1.5px] border-[#D5DFED] shadow-xs">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Total Pending Balance</span>
+                  <span className="text-lg font-black text-amber-700 mt-1 block tabular-nums">{formatINR(statement.remainingBalance)}</span>
                 </div>
-                <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Discount Given</span>
-                  <span className="text-lg font-black text-rose-600 mt-1 block">{formatINR(statement.totalDiscountGiven)}</span>
+                <div className="p-3.5 bg-white rounded-xl border-[1.5px] border-[#D5DFED] shadow-xs">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Total Discount Given</span>
+                  <span className="text-lg font-black text-rose-600 mt-1 block tabular-nums">{formatINR(statement.totalDiscountGiven)}</span>
                 </div>
-                <div className="p-3 bg-white rounded-xl border border-slate-200/80 shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Profit</span>
-                  <span className="text-lg font-black text-blue-700 mt-1 block">
+                <div className="p-3.5 bg-white rounded-xl border-[1.5px] border-[#D5DFED] shadow-xs">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Total Profit</span>
+                  <span className="text-lg font-black text-[#2563EB] mt-1 block tabular-nums">
                     {isAdmin ? formatINR(statement.totalProfit) : 'Confidential'}
                   </span>
                 </div>
@@ -566,4 +495,3 @@ export const DailyStatement: React.FC = () => {
     </div>
   );
 };
-

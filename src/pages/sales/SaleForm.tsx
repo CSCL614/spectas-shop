@@ -12,21 +12,12 @@ import {
   IndianRupee,
   Glasses,
   UserCheck,
-  Calendar,
-  Sparkles,
   CreditCard,
-  Percent,
-  Tag,
   CheckCircle2,
-  Clock,
-  Layers,
-  Search,
   Plus,
   Check,
   ChevronDown,
-  X,
-  Truck,
-  Phone,
+  Sparkles,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -117,7 +108,6 @@ export const SaleForm: React.FC = () => {
     }
   }, [isAdmin, isEdit]);
 
-  // Click outside listener for brand dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (brandDropdownRef.current && !brandDropdownRef.current.contains(e.target as Node)) {
@@ -174,7 +164,6 @@ export const SaleForm: React.FC = () => {
   };
 
   const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only accept numeric digits, maximum 10 digits
     const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10);
     setCustomerMobile(digitsOnly);
   };
@@ -203,7 +192,6 @@ export const SaleForm: React.FC = () => {
       return;
     }
 
-    // Phone number validation: exactly 10 digits
     if (!/^\d{10}$/.test(customerMobile.trim())) {
       toast.error('Customer phone number must be exactly 10 digits (digits only)');
       return;
@@ -259,30 +247,41 @@ export const SaleForm: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Top Header */}
-      <div className="flex items-center justify-between">
+      <div className="card-premium p-4 flex flex-wrap items-center justify-between gap-3 border-t-4 border-t-[#2563EB]">
         <button
           onClick={() => navigate('/sales')}
-          className="inline-flex items-center space-x-2 text-xs font-bold text-slate-500 hover:text-[#2563EB] transition-colors"
+          className="btn-secondary py-2 px-3.5 text-xs space-x-2"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Orders List</span>
         </button>
-        <span className="text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-blue-50 text-[#2563EB] border border-blue-200">
-          {isEdit ? 'Editing Customer Order' : 'New Order Entry'}
-        </span>
+        <div className="flex items-center space-x-2">
+          {stickerNumber && <span className="sticker-badge">{stickerNumber}</span>}
+          <span className="badge-partial">
+            <Sparkles className="w-3 h-3" />
+            {isEdit ? 'Editing Customer Order' : 'New Order Entry'}
+          </span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Card 1: Product Classification & Brand Dropdown */}
-        <div className="card-premium p-6">
-          <h2 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4 flex items-center space-x-2">
-            <Glasses className="w-4 h-4 text-[#2563EB]" />
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28 }}
+          className="card-premium p-6"
+        >
+          <h2 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-5 pb-3 border-b border-[#EEF2F8] flex items-center space-x-2.5">
+            <span className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#2563EB]">
+              <Glasses className="w-4 h-4" />
+            </span>
             <span>Product & Identification Details</span>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
+              <label className="label-modern">
                 Product Category / Type <span className="text-rose-500">*</span>
               </label>
               <select
@@ -298,12 +297,12 @@ export const SaleForm: React.FC = () => {
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider block">
+                <label className="text-[11px] font-extrabold text-[#172554] uppercase tracking-wider block">
                   Sticker Number <span className="text-rose-500">*</span>
                 </label>
                 {!isEdit && (
-                  <span className="text-[9px] font-black uppercase px-2 py-0.2 rounded-full bg-blue-100 text-blue-700">
-                    Auto-Generated
+                  <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-blue-50 text-[#2563EB] border border-blue-200">
+                    Auto STK-
                   </span>
                 )}
               </div>
@@ -311,16 +310,16 @@ export const SaleForm: React.FC = () => {
                 type="text"
                 value={stickerNumber}
                 onChange={(e) => setStickerNumber(e.target.value.toUpperCase())}
-                placeholder="e.g. 1001"
+                placeholder="e.g. STK-1016"
                 disabled={isEdit}
-                className="input-modern font-mono font-black uppercase disabled:bg-slate-100 disabled:text-slate-700 text-[#2563EB]"
+                className="input-modern font-mono font-black uppercase disabled:bg-[#EEF2F8] disabled:text-[#172554] text-[#2563EB]"
                 required
               />
             </div>
 
-            {/* PROPER SEARCHABLE BRAND DROPDOWN */}
+            {/* SEARCHABLE BRAND DROPDOWN */}
             <div className="relative" ref={brandDropdownRef}>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
+              <label className="label-modern">
                 Brand / Company Name <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
@@ -343,68 +342,81 @@ export const SaleForm: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsBrandDropdownOpen(!isBrandDropdownOpen)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
                 >
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className={`w-4 h-4 transition-transform ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
               </div>
 
-              {/* Dropdown Options */}
-              {isBrandDropdownOpen && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl border border-slate-200 z-50 max-h-60 overflow-y-auto">
-                  {filteredBrands.length > 0 ? (
-                    filteredBrands.map((brand) => (
-                      <div
-                        key={brand}
-                        onClick={() => {
-                          setCompanyName(brand);
-                          setBrandSearch(brand);
-                          setIsBrandDropdownOpen(false);
-                        }}
-                        className={`px-3.5 py-2.5 text-xs font-bold cursor-pointer flex items-center justify-between hover:bg-blue-50 hover:text-blue-700 transition-colors ${
-                          companyName === brand ? 'bg-blue-50 text-blue-700' : 'text-slate-800'
-                        }`}
-                      >
-                        <span>{brand}</span>
-                        {companyName === brand && <Check className="w-3.5 h-3.5 text-blue-600" />}
+              <AnimatePresence>
+                {isBrandDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                    transition={{ duration: 0.16 }}
+                    className="absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-2xl border-[1.5px] border-[#D5DFED] z-50 max-h-60 overflow-y-auto"
+                  >
+                    {filteredBrands.length > 0 ? (
+                      filteredBrands.map((brand) => (
+                        <div
+                          key={brand}
+                          onClick={() => {
+                            setCompanyName(brand);
+                            setBrandSearch(brand);
+                            setIsBrandDropdownOpen(false);
+                          }}
+                          className={`px-3.5 py-2.5 text-xs font-bold cursor-pointer flex items-center justify-between hover:bg-blue-50 hover:text-[#2563EB] transition-colors ${
+                            companyName === brand ? 'bg-blue-50 text-[#2563EB]' : 'text-[#172554]'
+                          }`}
+                        >
+                          <span>{brand}</span>
+                          {companyName === brand && <Check className="w-3.5 h-3.5 text-[#2563EB]" />}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-3 text-xs text-slate-400 text-center font-semibold">
+                        No matching brand found
                       </div>
-                    ))
-                  ) : (
-                    <div className="p-3 text-xs text-slate-400 text-center">
-                      No matching brand found
-                    </div>
-                  )}
+                    )}
 
-                  {/* Add New Brand Option */}
-                  {brandSearch.trim() && !isExactBrandMatch && (
-                    <div className="p-2 border-t border-slate-100 bg-slate-50">
-                      <button
-                        type="button"
-                        disabled={addingBrand}
-                        onClick={() => handleAddNewBrand(brandSearch)}
-                        className="w-full py-2 px-3 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center space-x-1.5 transition-all shadow-xs"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>{addingBrand ? 'Saving Brand...' : `+ Add "${brandSearch.trim()}" to Brands DB`}</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
+                    {brandSearch.trim() && !isExactBrandMatch && isAdmin && (
+                      <div className="p-2 border-t border-[#D5DFED] bg-[#EEF2F8]/60">
+                        <button
+                          type="button"
+                          disabled={addingBrand}
+                          onClick={() => handleAddNewBrand(brandSearch)}
+                          className="w-full py-2 px-3 rounded-lg text-xs font-extrabold bg-[#2563EB] hover:bg-[#1d4ed8] text-white flex items-center justify-center space-x-1.5 transition-all shadow-sm"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>{addingBrand ? 'Saving Brand...' : `+ Add "${brandSearch.trim()}" to Brands DB`}</span>
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Card 2: Financial Calculation */}
-        <div className="card-premium p-6">
-          <h2 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4 flex items-center space-x-2">
-            <IndianRupee className="w-4 h-4 text-[#0d9488]" />
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, delay: 0.06 }}
+          className="card-premium p-6"
+        >
+          <h2 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-5 pb-3 border-b border-[#EEF2F8] flex items-center space-x-2.5">
+            <span className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center text-[#0D9488]">
+              <IndianRupee className="w-4 h-4" />
+            </span>
             <span>Pricing, Discount & Profitability</span>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
+              <label className="label-modern">
                 Wholesale Cost Price (₹) <span className="text-rose-500">*</span>
               </label>
               <input
@@ -419,7 +431,7 @@ export const SaleForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
+              <label className="label-modern">
                 Original Selling Price (₹) <span className="text-rose-500">*</span>
               </label>
               <input
@@ -434,9 +446,7 @@ export const SaleForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
-                Discount Type
-              </label>
+              <label className="label-modern">Discount Type</label>
               <select
                 value={discountType}
                 onChange={(e) => setDiscountType(e.target.value as DiscountType)}
@@ -450,7 +460,7 @@ export const SaleForm: React.FC = () => {
 
             {discountType !== 'NONE' && (
               <div>
-                <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
+                <label className="label-modern">
                   Discount Value ({discountType === 'PERCENTAGE' ? '%' : '₹'})
                 </label>
                 <input
@@ -465,32 +475,38 @@ export const SaleForm: React.FC = () => {
             )}
           </div>
 
-          {/* Auto calculated pill cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-[#D5DFED]">
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-              <p className="text-[10px] font-bold text-slate-400 uppercase">Discount Deducted</p>
-              <p className="text-base font-black text-amber-600 mt-0.5">₹{calculatedDiscount}</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-[#D5DFED]">
+            <div className="p-3.5 rounded-xl bg-[#EEF2F8]/80 border-[1.5px] border-[#D5DFED]">
+              <p className="text-[10px] font-extrabold text-slate-500 uppercase">Discount Deducted</p>
+              <p className="text-lg font-black text-amber-600 mt-0.5 tabular-nums">₹{calculatedDiscount}</p>
             </div>
-            <div className="p-3 rounded-xl bg-blue-50 border border-blue-200">
-              <p className="text-[10px] font-bold text-blue-600 uppercase">Final Selling Price</p>
-              <p className="text-base font-black text-[#2563EB] mt-0.5">{formatINR(finalSellingPrice)}</p>
+            <div className="p-3.5 rounded-xl bg-blue-50/80 border-[1.5px] border-blue-200">
+              <p className="text-[10px] font-extrabold text-blue-700 uppercase">Final Selling Price</p>
+              <p className="text-lg font-black text-[#2563EB] mt-0.5 tabular-nums">{formatINR(finalSellingPrice)}</p>
             </div>
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-              <p className="text-[10px] font-bold text-emerald-700 uppercase">Gross Profit</p>
-              <p className="text-base font-black text-emerald-700 mt-0.5">{formatINR(grossProfit)}</p>
+            <div className="p-3.5 rounded-xl bg-emerald-50/80 border-[1.5px] border-emerald-200">
+              <p className="text-[10px] font-extrabold text-emerald-700 uppercase">Gross Profit</p>
+              <p className="text-lg font-black text-emerald-700 mt-0.5 tabular-nums">{formatINR(grossProfit)}</p>
             </div>
-            <div className="p-3 rounded-xl bg-teal-50 border border-teal-200">
-              <p className="text-[10px] font-bold text-teal-700 uppercase">Profit Margin</p>
-              <p className="text-base font-black text-teal-700 mt-0.5">{profitMargin}%</p>
+            <div className="p-3.5 rounded-xl bg-teal-50/80 border-[1.5px] border-teal-200">
+              <p className="text-[10px] font-extrabold text-teal-700 uppercase">Profit Margin</p>
+              <p className="text-lg font-black text-[#0D9488] mt-0.5 tabular-nums">{profitMargin}%</p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Card 3: Payment & Balance Clearance */}
-        <div className="card-premium p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-black text-[#172554] uppercase tracking-wider flex items-center space-x-2">
-              <CreditCard className="w-4 h-4 text-[#2563EB]" />
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, delay: 0.12 }}
+          className="card-premium p-6"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-5 pb-3 border-b border-[#EEF2F8]">
+            <h2 className="text-sm font-black text-[#172554] uppercase tracking-wider flex items-center space-x-2.5">
+              <span className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600">
+                <CreditCard className="w-4 h-4" />
+              </span>
               <span>Payment Details & Balance Clearance</span>
             </h2>
 
@@ -498,7 +514,7 @@ export const SaleForm: React.FC = () => {
               {currentBalanceStatus === 'CLEARED' ? (
                 <span className="badge-delivered">Balance Cleared (Fully Paid)</span>
               ) : currentBalanceStatus === 'PARTIAL' ? (
-                <span className="badge-pending">Partially Paid</span>
+                <span className="badge-partial">Partially Paid</span>
               ) : (
                 <span className="badge-overdue">Balance Pending</span>
               )}
@@ -507,7 +523,7 @@ export const SaleForm: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
+              <label className="label-modern">
                 Advance Amount Collected (₹) <span className="text-rose-500">*</span>
               </label>
               <input
@@ -516,13 +532,13 @@ export const SaleForm: React.FC = () => {
                 value={advanceAmount}
                 onChange={(e) => setAdvanceAmount(e.target.value === '' ? '' : Number(e.target.value))}
                 placeholder="0"
-                className="input-modern font-bold text-emerald-600"
+                className="input-modern font-bold text-[#0D9488]"
                 required
               />
             </div>
 
             <div>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
+              <label className="label-modern">
                 Payment Method <span className="text-rose-500">*</span>
               </label>
               <select
@@ -538,21 +554,18 @@ export const SaleForm: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
-                Remaining Outstanding Balance (₹)
-              </label>
-              <div className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-black text-rose-600 text-sm">
+              <label className="label-modern">Remaining Outstanding Balance (₹)</label>
+              <div className="px-4 py-2.5 bg-rose-50/60 border-[1.5px] border-rose-200 rounded-xl font-black text-rose-600 text-sm tabular-nums">
                 {formatINR(isEdit ? remainingBalance : computedRemaining)}
               </div>
             </div>
           </div>
 
-          {/* Mark Customer Balance as Fully Paid Action */}
           {isEdit && remainingBalance > 0 && (
-            <div className="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="mt-4 p-4 rounded-xl bg-amber-50 border-[1.5px] border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <p className="text-xs font-black text-amber-900">Customer has an outstanding balance of {formatINR(remainingBalance)}</p>
-                <p className="text-[11px] text-amber-700">Clearing the balance records an actual payment transaction in history and sets remaining balance to ₹0.</p>
+                <p className="text-[11px] text-amber-800 font-medium">Clearing the balance records an actual payment transaction in history and sets remaining balance to ₹0.</p>
               </div>
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -560,25 +573,32 @@ export const SaleForm: React.FC = () => {
                 type="button"
                 onClick={handleMarkBalanceCleared}
                 disabled={clearingBalance}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs shadow-md transition-all whitespace-nowrap disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-[#0D9488] text-white font-extrabold text-xs shadow-md transition-all whitespace-nowrap disabled:opacity-50"
               >
                 <CheckCircle2 className="w-3.5 h-3.5 inline mr-1.5" />
                 <span>{clearingBalance ? 'Clearing...' : 'Mark Customer Balance as Fully Paid'}</span>
               </motion.button>
             </div>
           )}
-        </div>
+        </motion.div>
 
         {/* Card 4: Customer Details & Fulfillment */}
-        <div className="card-premium p-6">
-          <h2 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4 flex items-center space-x-2">
-            <UserCheck className="w-4 h-4 text-[#2563EB]" />
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, delay: 0.18 }}
+          className="card-premium p-6"
+        >
+          <h2 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-5 pb-3 border-b border-[#EEF2F8] flex items-center space-x-2.5">
+            <span className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#2563EB]">
+              <UserCheck className="w-4 h-4" />
+            </span>
             <span>Customer Details & Fulfillment Status</span>
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
+              <label className="label-modern">
                 Customer Name <span className="text-rose-500">*</span>
               </label>
               <input
@@ -591,13 +611,12 @@ export const SaleForm: React.FC = () => {
               />
             </div>
 
-            {/* CUSTOMER PHONE NUMBER VALIDATION (EXACTLY 10 DIGITS) */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider block">
+                <label className="text-[11px] font-extrabold text-[#172554] uppercase tracking-wider block">
                   Customer Mobile Phone <span className="text-rose-500">*</span>
                 </label>
-                <span className={`text-[10px] font-mono font-bold ${customerMobile.length === 10 ? 'text-emerald-600' : 'text-slate-400'}`}>
+                <span className={`text-[10px] font-mono font-black ${customerMobile.length === 10 ? 'text-[#0D9488]' : 'text-slate-400'}`}>
                   {customerMobile.length}/10 digits
                 </span>
               </div>
@@ -608,20 +627,20 @@ export const SaleForm: React.FC = () => {
                 placeholder="10-digit mobile number"
                 className={`input-modern font-mono font-bold ${
                   customerMobile && customerMobile.length !== 10
-                    ? 'border-rose-400 bg-rose-50/30 text-rose-800'
+                    ? 'border-rose-400 bg-rose-50/40 text-rose-800'
                     : 'text-[#172554]'
                 }`}
                 required
               />
               {customerMobile && customerMobile.length !== 10 && (
-                <p className="text-[10px] text-rose-600 font-bold mt-1">
+                <p className="text-[10px] text-rose-600 font-extrabold mt-1">
                   Must be exactly 10 numeric digits
                 </p>
               )}
             </div>
 
             <div>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
+              <label className="label-modern">
                 Expected Delivery Date <span className="text-rose-500">*</span>
               </label>
               <input
@@ -633,15 +652,14 @@ export const SaleForm: React.FC = () => {
               />
             </div>
 
-            {/* CUSTOMER DELIVERY STATUS FIELD (ADMIN & SALES EXECUTIVE) */}
             <div>
-              <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
+              <label className="label-modern">
                 Customer Delivery Status <span className="text-rose-500">*</span>
               </label>
               <select
                 value={deliveryStatus}
                 onChange={(e) => setDeliveryStatus(e.target.value as 'PENDING' | 'DELIVERED')}
-                className={`input-modern cursor-pointer font-bold ${
+                className={`input-modern cursor-pointer font-extrabold ${
                   deliveryStatus === 'DELIVERED'
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                     : 'bg-amber-50 text-amber-800 border-amber-300'
@@ -650,37 +668,33 @@ export const SaleForm: React.FC = () => {
                 <option value="PENDING">🟠 Not Delivered (In Lab / Ready for Pickup)</option>
                 <option value="DELIVERED">🟢 Delivered (Handed Over to Customer)</option>
               </select>
-              <div className="mt-1 flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${deliveryStatus === 'DELIVERED' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-                <span className={`text-[10px] font-extrabold uppercase ${deliveryStatus === 'DELIVERED' ? 'text-emerald-700' : 'text-amber-700'}`}>
-                  Badge: {deliveryStatus === 'DELIVERED' ? 'Delivered' : 'Not Delivered'}
+              <div className="mt-1.5">
+                <span className={deliveryStatus === 'DELIVERED' ? 'badge-delivered' : 'badge-pending'}>
+                  {deliveryStatus === 'DELIVERED' ? 'Delivered' : 'Not Delivered'}
                 </span>
               </div>
             </div>
 
-            {/* ASSIGN TO SALES EXECUTIVE (ADMIN ONLY) */}
             {isAdmin && (
-              <div className="sm:col-span-2 lg:col-span-4 pt-2 border-t border-slate-100">
-                <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1.5 block">
-                  Assign to Sales Executive
-                </label>
+              <div className="sm:col-span-2 lg:col-span-4 pt-3 border-t border-[#D5DFED]">
+                <label className="label-modern">Assign to Sales Executive</label>
                 <select
                   value={salespersonId}
                   onChange={(e) => setSalespersonId(e.target.value)}
-                  className="input-modern cursor-pointer font-bold text-slate-800 max-w-md"
+                  className="input-modern cursor-pointer font-bold text-[#172554] max-w-md"
                 >
                   <option value="">Admin Account ({user?.fullName})</option>
                   {salespersons.map((sp) => (
                     <option key={sp.id} value={sp.id}>{sp.fullName} (@{sp.username})</option>
                   ))}
                 </select>
-                <p className="text-[10px] text-slate-400 mt-1">
+                <p className="text-[10px] text-slate-500 font-medium mt-1">
                   Assigning or reassigning updates order ownership, specialist metrics, and records an audit trail.
                 </p>
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Submit action */}
         <div className="flex justify-end space-x-3 pt-2">

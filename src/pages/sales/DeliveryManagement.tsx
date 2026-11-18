@@ -8,12 +8,11 @@ import {
   AlertTriangle,
   CheckCircle,
   Clock,
-  Phone,
   MessageCircle,
-  Glasses,
   Check,
-  RotateCw
+  RotateCw,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export const DeliveryManagement: React.FC = () => {
@@ -36,7 +35,7 @@ export const DeliveryManagement: React.FC = () => {
       setPendingSales(pendingRes.data.data.content);
       setDeliveredSales(deliveredRes.data.data.content);
       setOverdueSales(overdueRes.data.data);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load delivery records');
     } finally {
       setLoading(false);
@@ -57,7 +56,7 @@ export const DeliveryManagement: React.FC = () => {
           : 'Order reverted to Pending status'
       );
       await fetchData();
-    } catch (err) {
+    } catch {
       toast.error('Status update failed');
     } finally {
       setUpdatingId(null);
@@ -78,75 +77,66 @@ export const DeliveryManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-xl font-black text-slate-900 tracking-tight">Delivery Fulfillment & Tracking</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-              Optical Lab Pipeline
-            </span>
+      <div className="card-premium p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t-4 border-t-[#0D9488]">
+        <div className="flex items-start space-x-3.5">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#172554] via-[#2563EB] to-[#0D9488] text-white flex items-center justify-center shadow-md shadow-teal-500/25 shrink-0">
+            <Truck className="w-5 h-5" />
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Track lab fitting progress, customer handover and resolve overdue delivery schedules
-          </p>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl font-black text-[#172554] tracking-tight">Delivery Fulfillment & Tracking</h1>
+              <span className="badge-partial">Optical Lab Pipeline</span>
+            </div>
+            <p className="text-xs font-medium text-slate-500 mt-0.5">
+              Track lab fitting progress, customer handover and resolve overdue delivery schedules
+            </p>
+          </div>
         </div>
 
-        <button
-          onClick={fetchData}
-          className="btn-secondary text-xs space-x-1.5 py-2 px-3"
-        >
-          <RotateCw className="w-3.5 h-3.5 text-slate-500" />
+        <button onClick={fetchData} className="btn-secondary text-xs space-x-1.5 py-2 px-3.5">
+          <RotateCw className="w-3.5 h-3.5 text-[#2563EB]" />
           <span>Refresh Pipeline</span>
         </button>
       </div>
 
       {/* Segmented Tabs Bar */}
-      <div className="card-premium p-1.5 flex flex-wrap gap-1 bg-slate-100/70 border-slate-200/80">
+      <div className="card-premium p-2 flex flex-wrap gap-2 bg-[#EEF2F8]/90">
         <button
           onClick={() => setTab('pending')}
-          className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-2 ${
-            tab === 'pending'
-              ? 'bg-white text-slate-900 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-          }`}
+          className={`flex-1 min-w-[150px] py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center space-x-2 border ${tab === 'pending'
+              ? 'bg-white text-[#172554] border-[#D5DFED] shadow-md'
+              : 'text-slate-600 border-transparent hover:text-[#172554]'
+            }`}
         >
           <Clock className="w-4 h-4 text-amber-500" />
           <span>Pending Lab Orders</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-100 text-amber-800 font-extrabold">
-            {pendingSales.length}
-          </span>
+          <span className="badge-pending">{pendingSales.length}</span>
         </button>
 
         <button
           onClick={() => setTab('overdue')}
-          className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-2 ${
-            tab === 'overdue'
-              ? 'bg-white text-rose-600 shadow-sm'
-              : 'text-slate-600 hover:text-rose-600'
-          }`}
+          className={`flex-1 min-w-[150px] py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center space-x-2 border ${tab === 'overdue'
+              ? 'bg-white text-rose-600 border-rose-200 shadow-md'
+              : 'text-slate-600 border-transparent hover:text-rose-600'
+            }`}
         >
           <AlertTriangle className="w-4 h-4 text-rose-500" />
           <span>Overdue Alerts</span>
-          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-            overdueSales.length > 0 ? 'bg-rose-100 text-rose-700 animate-pulse' : 'bg-slate-200 text-slate-700'
-          }`}>
+          <span className={overdueSales.length > 0 ? 'badge-overdue animate-pulse' : 'badge-partial'}>
             {overdueSales.length}
           </span>
         </button>
 
         <button
           onClick={() => setTab('delivered')}
-          className={`flex-1 min-w-[140px] py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-2 ${
-            tab === 'delivered'
-              ? 'bg-white text-emerald-600 shadow-sm'
-              : 'text-slate-600 hover:text-emerald-600'
-          }`}
+          className={`flex-1 min-w-[150px] py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center space-x-2 border ${tab === 'delivered'
+              ? 'bg-white text-[#0D9488] border-emerald-200 shadow-md'
+              : 'text-slate-600 border-transparent hover:text-[#0D9488]'
+            }`}
         >
-          <CheckCircle className="w-4 h-4 text-emerald-500" />
+          <CheckCircle className="w-4 h-4 text-[#0D9488]" />
           <span>Completed Handover</span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 text-emerald-800 font-extrabold">
-            {deliveredSales.length}
-          </span>
+          <span className="badge-delivered">{deliveredSales.length}</span>
         </button>
       </div>
 
@@ -174,8 +164,8 @@ export const DeliveryManagement: React.FC = () => {
                     <td colSpan={7} className="px-6 py-16 text-center">
                       <div className="flex flex-col items-center justify-center space-y-2">
                         <Truck className="w-10 h-10 text-slate-300" />
-                        <p className="text-sm font-semibold text-slate-700">No orders in this delivery category</p>
-                        <p className="text-xs text-slate-400">All customer deliveries are running on schedule!</p>
+                        <p className="text-sm font-black text-[#172554]">No orders in this delivery category</p>
+                        <p className="text-xs text-slate-500">All customer deliveries are running on schedule!</p>
                       </div>
                     </td>
                   </tr>
@@ -183,91 +173,68 @@ export const DeliveryManagement: React.FC = () => {
                   currentList.map((sale) => {
                     const daysLate = getDaysDiff(sale.expectedDeliveryDate);
                     return (
-                      <tr key={sale.id} className="group">
-                        {/* Sticker */}
+                      <tr key={sale.id}>
                         <td>
-                          <span className="font-mono font-bold text-xs text-blue-700 bg-blue-50 px-2 py-1 rounded-md">
-                            {sale.stickerNumber}
-                          </span>
+                          <span className="sticker-badge">{sale.stickerNumber}</span>
                         </td>
-
-                        {/* Customer */}
                         <td>
                           <div>
-                            <p className="font-bold text-xs text-slate-900">{sale.customerName}</p>
+                            <p className="font-extrabold text-xs text-[#172554]">{sale.customerName}</p>
                             <div className="flex items-center space-x-2 mt-0.5">
-                              <span className="text-[11px] text-slate-400 font-mono">{sale.customerMobile}</span>
+                              <span className="text-[11px] text-slate-500 font-mono font-semibold">{sale.customerMobile}</span>
                               <a
                                 href={`https://wa.me/91${sale.customerMobile}?text=Hello%20${encodeURIComponent(sale.customerName)},%20your%20spectacles%20order%20(${sale.stickerNumber})%20is%20ready%20at%20our%20shop!`}
                                 target="_blank"
                                 rel="noreferrer"
                                 title="Send WhatsApp Delivery Update"
-                                className="text-emerald-500 hover:text-emerald-600 p-0.5 rounded transition"
+                                className="text-emerald-600 hover:text-emerald-700 p-0.5 rounded transition"
                               >
                                 <MessageCircle className="w-3.5 h-3.5" />
                               </a>
                             </div>
                           </div>
                         </td>
-
-                        {/* Brand */}
                         <td>
-                          <span className="badge-brand font-medium">
-                            {sale.companyName}
-                          </span>
+                          <span className="badge-partial">{sale.companyName}</span>
                         </td>
-
-                        {/* Expected Date */}
                         <td>
                           <div>
-                            <p className="text-xs font-medium text-slate-800">
-                              {formatDate(sale.expectedDeliveryDate)}
-                            </p>
+                            <p className="text-xs font-bold text-[#172554]">{formatDate(sale.expectedDeliveryDate)}</p>
                             {tab === 'overdue' && daysLate > 0 && (
-                              <span className="inline-flex items-center text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded mt-0.5">
+                              <span className="badge-overdue mt-1">
                                 ⚠️ {daysLate} {daysLate === 1 ? 'day' : 'days'} overdue
                               </span>
                             )}
                           </div>
                         </td>
-
-                        {/* Balance & Payment Method */}
                         <td>
                           <div>
                             {sale.remainingBalance > 0 ? (
-                              <span className="inline-flex items-center text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                                Collect {formatINR(sale.remainingBalance)}
-                              </span>
+                              <span className="badge-pending">Collect {formatINR(sale.remainingBalance)}</span>
                             ) : (
-                              <span className="inline-flex items-center text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                                Fully Settled
-                              </span>
+                              <span className="badge-delivered">Fully Settled</span>
                             )}
-                            <p className="text-[10px] text-slate-400 mt-0.5 font-medium">Mode: {sale.paymentMethod || 'Cash'}</p>
+                            <p className="text-[10px] text-slate-500 mt-1 font-semibold">Mode: {sale.paymentMethod || 'Cash'}</p>
                           </div>
                         </td>
-
-                        {/* Salesperson */}
-                        <td className="text-xs font-medium text-slate-500">
-                          {sale.salespersonName}
-                        </td>
-
-                        {/* Handover Action Button */}
+                        <td className="text-xs font-bold text-[#172554]">{sale.salespersonName}</td>
                         <td className="text-right">
                           {sale.deliveryStatus === 'PENDING' ? (
-                            <button
+                            <motion.button
+                              whileHover={{ scale: 1.03 }}
+                              whileTap={{ scale: 0.96 }}
                               disabled={updatingId === sale.id}
                               onClick={() => handleStatusUpdate(sale.id, 'DELIVERED')}
-                              className="inline-flex items-center space-x-1.5 text-xs font-bold px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm hover:shadow transition active:scale-95 disabled:opacity-50"
+                              className="inline-flex items-center space-x-1.5 text-xs font-extrabold px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-[#0D9488] text-white rounded-xl shadow-sm hover:shadow-md transition disabled:opacity-50"
                             >
                               <Check className="w-3.5 h-3.5" />
                               <span>Hand Over Glasses</span>
-                            </button>
+                            </motion.button>
                           ) : (
                             <button
                               disabled={updatingId === sale.id}
                               onClick={() => handleStatusUpdate(sale.id, 'PENDING')}
-                              className="inline-flex items-center space-x-1.5 text-xs font-medium px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition active:scale-95 disabled:opacity-50"
+                              className="btn-secondary text-xs py-1.5 px-3 space-x-1.5 disabled:opacity-50"
                             >
                               <Clock className="w-3.5 h-3.5 text-amber-600" />
                               <span>Revert to Pending</span>

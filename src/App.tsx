@@ -10,7 +10,6 @@ import { SalesList } from './pages/sales/SalesList';
 import { SaleForm } from './pages/sales/SaleForm';
 import { SaleDetails } from './pages/sales/SaleDetails';
 import { DailyStatement } from './pages/sales/DailyStatement';
-import { CustomerFeedbackPage } from './pages/feedback/CustomerFeedbackPage';
 import { ExcelImport } from './pages/excel/ExcelImport';
 import { ExcelExport } from './pages/excel/ExcelExport';
 import { ExcelSheets } from './pages/admin/ExcelSheets';
@@ -85,7 +84,6 @@ export const App: React.FC = () => {
             <Route path="/sales/:id" element={<SaleDetails />} />
             <Route path="/sales/:id/edit" element={<SaleForm />} />
             <Route path="/daily-statement" element={<DailyStatement />} />
-            <Route path="/feedback" element={<CustomerFeedbackPage />} />
             <Route path="/excel/import" element={<ExcelImport />} />
             <Route path="/excel/export" element={<ExcelExport />} />
             <Route path="/profile" element={<Profile />} />

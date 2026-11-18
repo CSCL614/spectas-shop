@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { salesApi } from '../../api/services';
 import type { DashboardStatsResponse } from '../../types';
+import { StatCard } from '../../components/ui/StatCard';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { formatINR, getDateRange } from '../../utils/helpers';
 import {
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, Legend,
 } from 'recharts';
 import {
@@ -12,12 +13,13 @@ import {
   BarChart3,
   TrendingUp,
   IndianRupee,
-  ShoppingBag,
   Glasses,
-  Percent,
   Layers,
   Sparkles,
+  ShoppingBag,
+  Wallet,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export const ReportsAnalytics: React.FC = () => {
@@ -45,7 +47,7 @@ export const ReportsAnalytics: React.FC = () => {
           dateTo: dateTo || undefined,
         });
         setStats(res.data.data);
-      } catch (err: any) {
+      } catch {
         toast.error('Failed to load analytical metrics');
       } finally {
         setLoading(false);
@@ -67,28 +69,29 @@ export const ReportsAnalytics: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="card-premium p-6 bg-gradient-to-r from-[#172554] via-[#1e3a8a] to-[#0d9488] text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
+      <div className="page-banner p-6 text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="pointer-events-none absolute -right-12 -top-12 w-52 h-52 rounded-full bg-teal-400/20 blur-3xl" />
+        <div className="relative z-10">
           <div className="flex items-center space-x-2">
-            <span className="p-2 rounded-xl bg-white/10 text-teal-300">
+            <span className="p-2 rounded-xl bg-white/15 border border-white/25 text-teal-200">
               <BarChart3 className="w-5 h-5" />
             </span>
-            <span className="text-[11px] font-black uppercase tracking-wider text-teal-300">
+            <span className="text-[11px] font-black uppercase tracking-wider text-teal-200">
               Business Intelligence & Product Type Breakdown
             </span>
           </div>
           <h1 className="text-2xl font-black mt-2 tracking-tight">Frames & Lenses Financial Analytics</h1>
-          <p className="text-xs text-blue-100 mt-1 max-w-xl">
+          <p className="text-xs text-blue-100/90 mt-1 max-w-xl font-medium">
             Strictly segregated business intelligence: independent performance, profit margins, brand velocities, and comparative charts for Frames versus Lenses.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/20 self-start md:self-auto">
-          <Calendar className="w-4 h-4 text-blue-200" />
+        <div className="relative z-10 flex items-center space-x-2 bg-white/15 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-white/25 self-start md:self-auto">
+          <Calendar className="w-4 h-4 text-teal-200" />
           <select
             value={preset}
             onChange={(e) => setPreset(e.target.value)}
-            className="text-xs font-bold bg-transparent outline-none cursor-pointer text-white"
+            className="text-xs font-extrabold bg-transparent outline-none cursor-pointer text-white"
           >
             <option value="today" className="text-slate-900">Today</option>
             <option value="last7days" className="text-slate-900">Last 7 Days</option>
@@ -100,7 +103,7 @@ export const ReportsAnalytics: React.FC = () => {
       </div>
 
       {/* Segregation Tabs */}
-      <div className="flex items-center space-x-2 border-b border-[#D5DFED] pb-3 text-xs font-bold">
+      <div className="card-premium p-2 flex flex-wrap items-center gap-2 bg-[#EEF2F8]/90 text-xs font-extrabold">
         {[
           { id: 'OVERVIEW', label: 'Overall Summary', icon: Layers },
           { id: 'FRAMES', label: '👓 Frame Analytics', icon: Glasses },
@@ -113,11 +116,10 @@ export const ReportsAnalytics: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2 rounded-xl flex items-center space-x-2 transition-all ${
-                isActive
-                  ? 'bg-[#2563EB] text-white shadow-md shadow-blue-500/20'
-                  : 'text-slate-600 hover:bg-slate-100'
-              }`}
+              className={`px-4 py-2.5 rounded-xl flex items-center space-x-2 transition-all border ${isActive
+                  ? 'bg-gradient-to-r from-[#172554] via-[#2563EB] to-[#0D9488] text-white border-blue-400/30 shadow-md'
+                  : 'text-[#172554] bg-white/60 border-[#D5DFED] hover:bg-white hover:border-[#2563EB]'
+                }`}
             >
               <Icon className="w-3.5 h-3.5" />
               <span>{tab.label}</span>
@@ -133,42 +135,63 @@ export const ReportsAnalytics: React.FC = () => {
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'OVERVIEW' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="card-stat">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Total Revenue</p>
-                  <p className="text-2xl font-black text-[#2563EB] mt-1">{formatINR(stats?.totalRevenue || 0)}</p>
-                  <p className="text-[10px] text-slate-400 mt-1">{stats?.totalOrders || 0} total optical orders</p>
-                </div>
-                <div className="card-stat">
-                  <p className="text-[10px] font-bold text-emerald-700 uppercase">Gross Profit</p>
-                  <p className="text-2xl font-black text-emerald-700 mt-1">{formatINR(stats?.grossProfit || 0)}</p>
-                  <p className="text-[10px] text-emerald-600 font-bold mt-1">Margin: {stats?.totalRevenue ? Math.round((stats.grossProfit / stats.totalRevenue) * 100) : 0}%</p>
-                </div>
-                <div className="card-stat">
-                  <p className="text-[10px] font-bold text-blue-600 uppercase">Frame Share</p>
-                  <p className="text-2xl font-black text-[#2563EB] mt-1">{formatINR(frame.revenue)}</p>
-                  <p className="text-[10px] text-blue-500 font-bold mt-1">{frame.totalOrders} frame units</p>
-                </div>
-                <div className="card-stat">
-                  <p className="text-[10px] font-bold text-purple-700 uppercase">Lens Share</p>
-                  <p className="text-2xl font-black text-purple-700 mt-1">{formatINR(lens.revenue)}</p>
-                  <p className="text-[10px] text-purple-600 font-bold mt-1">{lens.totalOrders} lens pairs</p>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard
+                  title="Total Revenue"
+                  value={formatINR(stats?.totalRevenue || 0)}
+                  subtitle={`${stats?.totalOrders || 0} total optical orders`}
+                  icon={IndianRupee}
+                  iconBgColor="bg-blue-50"
+                  iconColor="text-[#2563EB]"
+                  accentBorderColor="from-[#172554] to-[#2563EB]"
+                  delay={0.04}
+                />
+                <StatCard
+                  title="Gross Profit"
+                  value={formatINR(stats?.grossProfit || 0)}
+                  subtitle={`Margin: ${stats?.totalRevenue ? Math.round((stats.grossProfit / stats.totalRevenue) * 100) : 0}%`}
+                  icon={TrendingUp}
+                  iconBgColor="bg-emerald-50"
+                  iconColor="text-[#0D9488]"
+                  accentBorderColor="from-emerald-500 to-[#0D9488]"
+                  delay={0.08}
+                />
+                <StatCard
+                  title="Frame Share"
+                  value={formatINR(frame.revenue)}
+                  subtitle={`${frame.totalOrders} frame units`}
+                  icon={Glasses}
+                  iconBgColor="bg-indigo-50"
+                  iconColor="text-indigo-600"
+                  accentBorderColor="from-[#2563EB] to-indigo-600"
+                  delay={0.12}
+                />
+                <StatCard
+                  title="Lens Share"
+                  value={formatINR(lens.revenue)}
+                  subtitle={`${lens.totalOrders} lens pairs`}
+                  icon={Sparkles}
+                  iconBgColor="bg-purple-50"
+                  iconColor="text-purple-600"
+                  accentBorderColor="from-purple-500 to-fuchsia-600"
+                  delay={0.16}
+                />
               </div>
 
-              {/* Daily Trend Chart */}
               <div className="card-premium p-6">
-                <h3 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4">Daily Revenue & Profit Velocity</h3>
+                <h3 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4 pb-3 border-b border-[#EEF2F8]">
+                  Daily Revenue & Profit Velocity
+                </h3>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={stats?.dailyTrends || []}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${v}`} />
-                      <Tooltip formatter={(v: any) => formatINR(Number(v))} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E9F3" />
+                      <XAxis dataKey="date" tick={{ fontSize: 11 }} stroke="#64748b" />
+                      <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₹${v}`} stroke="#64748b" />
+                      <Tooltip formatter={(v: any) => formatINR(Number(v))} contentStyle={{ borderRadius: '12px', border: '1.5px solid #D5DFED' }} />
                       <Legend />
-                      <Bar dataKey="revenue" name="Revenue" fill="#2563EB" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="profit" name="Gross Profit" fill="#0d9488" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="revenue" name="Revenue" fill="#2563EB" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="profit" name="Gross Profit" fill="#0D9488" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -179,43 +202,34 @@ export const ReportsAnalytics: React.FC = () => {
           {/* TAB 2: FRAME ANALYTICS */}
           {activeTab === 'FRAMES' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="card-stat border-l-4 border-l-[#2563EB]">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Total Frame Orders</p>
-                  <p className="text-2xl font-black text-[#2563EB] mt-1">{frame.totalOrders}</p>
-                </div>
-                <div className="card-stat">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Frame Revenue</p>
-                  <p className="text-2xl font-black text-slate-900 mt-1">{formatINR(frame.revenue)}</p>
-                </div>
-                <div className="card-stat">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Frame Wholesale Cost</p>
-                  <p className="text-2xl font-black text-slate-600 mt-1">{formatINR(frame.cost)}</p>
-                </div>
-                <div className="card-stat">
-                  <p className="text-[10px] font-bold text-emerald-700 uppercase">Frame Gross Profit</p>
-                  <p className="text-2xl font-black text-emerald-700 mt-1">{formatINR(frame.profit)}</p>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard title="Total Frame Orders" value={frame.totalOrders} icon={ShoppingBag} iconBgColor="bg-blue-50" iconColor="text-[#2563EB]" accentBorderColor="from-[#172554] to-[#2563EB]" />
+                <StatCard title="Frame Revenue" value={formatINR(frame.revenue)} icon={IndianRupee} iconBgColor="bg-indigo-50" iconColor="text-indigo-600" accentBorderColor="from-[#2563EB] to-indigo-600" />
+                <StatCard title="Frame Wholesale Cost" value={formatINR(frame.cost)} icon={Wallet} iconBgColor="bg-slate-100" iconColor="text-slate-600" accentBorderColor="from-slate-500 to-slate-700" />
+                <StatCard title="Frame Gross Profit" value={formatINR(frame.profit)} icon={TrendingUp} iconBgColor="bg-emerald-50" iconColor="text-[#0D9488]" accentBorderColor="from-emerald-500 to-[#0D9488]" />
               </div>
 
-              {/* Top Frame Brands Table */}
               <div className="card-premium p-6">
-                <h3 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4 flex items-center gap-2">
+                <h3 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4 pb-3 border-b border-[#EEF2F8] flex items-center gap-2">
                   <Glasses className="w-4 h-4 text-[#2563EB]" />
                   <span>Most Sold Frame Brands</span>
                 </h3>
                 {frame.topBrands.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-6 text-center">No frame orders in selected period</p>
+                  <p className="text-xs text-slate-400 py-6 text-center font-semibold">No frame orders in selected period</p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                     {frame.topBrands.map((b, i) => (
-                      <div key={b.brand} className="p-3.5 rounded-xl bg-blue-50/50 border border-blue-100 flex items-center justify-between">
+                      <motion.div
+                        key={b.brand}
+                        whileHover={{ y: -3, scale: 1.02 }}
+                        className="p-4 rounded-xl bg-blue-50/70 border-[1.5px] border-blue-200 flex items-center justify-between shadow-xs"
+                      >
                         <div>
                           <p className="text-xs font-black text-[#172554]">#{i + 1} {b.brand}</p>
-                          <p className="text-[10px] text-slate-400 font-semibold">Frame Brand</p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">Frame Brand</p>
                         </div>
-                        <span className="text-sm font-black text-[#2563EB]">{b.count} sold</span>
-                      </div>
+                        <span className="badge-partial text-xs">{b.count} sold</span>
+                      </motion.div>
                     ))}
                   </div>
                 )}
@@ -226,43 +240,36 @@ export const ReportsAnalytics: React.FC = () => {
           {/* TAB 3: LENS ANALYTICS */}
           {activeTab === 'LENSES' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="card-stat border-l-4 border-l-purple-600">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Total Lens Orders</p>
-                  <p className="text-2xl font-black text-purple-700 mt-1">{lens.totalOrders}</p>
-                </div>
-                <div className="card-stat">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Lens Revenue</p>
-                  <p className="text-2xl font-black text-slate-900 mt-1">{formatINR(lens.revenue)}</p>
-                </div>
-                <div className="card-stat">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Lens Wholesale Cost</p>
-                  <p className="text-2xl font-black text-slate-600 mt-1">{formatINR(lens.cost)}</p>
-                </div>
-                <div className="card-stat">
-                  <p className="text-[10px] font-bold text-emerald-700 uppercase">Lens Gross Profit</p>
-                  <p className="text-2xl font-black text-emerald-700 mt-1">{formatINR(lens.profit)}</p>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatCard title="Total Lens Orders" value={lens.totalOrders} icon={ShoppingBag} iconBgColor="bg-purple-50" iconColor="text-purple-600" accentBorderColor="from-purple-500 to-fuchsia-600" />
+                <StatCard title="Lens Revenue" value={formatINR(lens.revenue)} icon={IndianRupee} iconBgColor="bg-indigo-50" iconColor="text-indigo-600" accentBorderColor="from-[#2563EB] to-purple-600" />
+                <StatCard title="Lens Wholesale Cost" value={formatINR(lens.cost)} icon={Wallet} iconBgColor="bg-slate-100" iconColor="text-slate-600" accentBorderColor="from-slate-500 to-slate-700" />
+                <StatCard title="Lens Gross Profit" value={formatINR(lens.profit)} icon={TrendingUp} iconBgColor="bg-emerald-50" iconColor="text-[#0D9488]" accentBorderColor="from-emerald-500 to-[#0D9488]" />
               </div>
 
-              {/* Top Lens Brands Table */}
               <div className="card-premium p-6">
-                <h3 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4 flex items-center gap-2">
+                <h3 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4 pb-3 border-b border-[#EEF2F8] flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-purple-600" />
                   <span>Most Sold Lens Brands & Optical Types</span>
                 </h3>
                 {lens.topBrands.length === 0 ? (
-                  <p className="text-xs text-slate-400 py-6 text-center">No lens orders in selected period</p>
+                  <p className="text-xs text-slate-400 py-6 text-center font-semibold">No lens orders in selected period</p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                     {lens.topBrands.map((b, i) => (
-                      <div key={b.brand} className="p-3.5 rounded-xl bg-purple-50/50 border border-purple-100 flex items-center justify-between">
+                      <motion.div
+                        key={b.brand}
+                        whileHover={{ y: -3, scale: 1.02 }}
+                        className="p-4 rounded-xl bg-purple-50/70 border-[1.5px] border-purple-200 flex items-center justify-between shadow-xs"
+                      >
                         <div>
                           <p className="text-xs font-black text-[#172554]">#{i + 1} {b.brand}</p>
-                          <p className="text-[10px] text-slate-400 font-semibold">Lens Category</p>
+                          <p className="text-[10px] text-slate-500 font-bold uppercase mt-0.5">Lens Category</p>
                         </div>
-                        <span className="text-sm font-black text-purple-700">{b.count} sold</span>
-                      </div>
+                        <span className="px-2.5 py-1 rounded-full text-xs font-black bg-white text-purple-700 border border-purple-200">
+                          {b.count} sold
+                        </span>
+                      </motion.div>
                     ))}
                   </div>
                 )}
@@ -272,22 +279,22 @@ export const ReportsAnalytics: React.FC = () => {
 
           {/* TAB 4: COMPARISON */}
           {activeTab === 'COMPARISON' && (
-            <div className="space-y-6">
-              <div className="card-premium p-6">
-                <h3 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4">Frame vs Lens Metric Comparison</h3>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={comparisonData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                      <XAxis dataKey="metric" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip formatter={(v: any) => formatINR(Number(v))} />
-                      <Legend />
-                      <Bar dataKey="Frame" name="👓 Frames" fill="#2563EB" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="Lens" name="🔍 Lenses" fill="#9333EA" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
+            <div className="card-premium p-6">
+              <h3 className="text-sm font-black text-[#172554] uppercase tracking-wider mb-4 pb-3 border-b border-[#EEF2F8]">
+                Frame vs Lens Metric Comparison
+              </h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={comparisonData}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E9F3" />
+                    <XAxis dataKey="metric" tick={{ fontSize: 11 }} stroke="#64748b" />
+                    <YAxis tick={{ fontSize: 11 }} stroke="#64748b" />
+                    <Tooltip formatter={(v: any) => formatINR(Number(v))} contentStyle={{ borderRadius: '12px', border: '1.5px solid #D5DFED' }} />
+                    <Legend />
+                    <Bar dataKey="Frame" name="👓 Frames" fill="#2563EB" radius={[6, 6, 0, 0]} />
+                    <Bar dataKey="Lens" name="🔍 Lenses" fill="#9333EA" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           )}

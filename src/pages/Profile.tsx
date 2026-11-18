@@ -2,21 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { authApi, adminApi } from '../api/services';
 import type { UserResponse } from '../types';
-import { 
-  User, 
-  Lock, 
-  KeyRound, 
-  Shield, 
-  CheckCircle2, 
-  Eye, 
-  EyeOff, 
-  ShieldCheck, 
-  Mail, 
+import {
+  Lock,
+  KeyRound,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  ShieldCheck,
+  Mail,
   Sparkles,
   Fingerprint,
   Award,
-  Users,
-  ShieldAlert
+  ShieldAlert,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -31,7 +28,6 @@ export const Profile: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Show / Hide password toggles for personal form
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -58,7 +54,6 @@ export const Profile: React.FC = () => {
     }
   }, [isAdmin]);
 
-  // Password Strength Calculation
   const calculateStrength = (pwd: string) => {
     if (!pwd) return { score: 0, label: 'None', color: 'bg-slate-200' };
     let score = 0;
@@ -73,9 +68,9 @@ export const Profile: React.FC = () => {
       case 2:
         return { score: 50, label: 'Fair', color: 'bg-amber-500' };
       case 3:
-        return { score: 75, label: 'Good', color: 'bg-blue-500' };
+        return { score: 75, label: 'Good', color: 'bg-[#2563EB]' };
       case 4:
-        return { score: 100, label: 'Strong', color: 'bg-emerald-500' };
+        return { score: 100, label: 'Strong', color: 'bg-[#0D9488]' };
       default:
         return { score: 0, label: 'None', color: 'bg-slate-200' };
     }
@@ -140,29 +135,25 @@ export const Profile: React.FC = () => {
   const selectedSalesperson = salespersons.find((s) => s.id === selectedSalespersonId);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="max-w-4xl mx-auto space-y-6"
-    >
+    <div className="max-w-4xl mx-auto space-y-6">
       {/* 1. Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#172554] via-[#1e3a8a] to-[#0d9488] p-6 sm:p-8 text-white shadow-xl shadow-blue-950/10 border border-blue-800/40">
-        <div className="flex items-start sm:items-center space-x-4">
-          <div className="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-teal-300 shadow-inner">
+      <div className="page-banner p-6 sm:p-8 text-white">
+        <div className="pointer-events-none absolute -right-12 -bottom-12 w-52 h-52 rounded-full bg-teal-400/20 blur-3xl" />
+        <div className="relative z-10 flex items-start sm:items-center space-x-4">
+          <div className="p-3.5 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 text-teal-200 shadow-inner">
             <Fingerprint className="w-7 h-7" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-200 border border-teal-400/30">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-teal-400/20 text-teal-100 border border-teal-300/35">
                 Identity & Access
               </span>
-              <span className="text-blue-200 text-xs font-mono">• Active Session</span>
+              <span className="text-blue-200 text-xs font-mono font-bold">• Active Session</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1.5">
               Profile & Security Credentials
             </h1>
-            <p className="text-xs sm:text-sm text-blue-100/80 mt-1 max-w-xl">
+            <p className="text-xs sm:text-sm text-blue-100/90 mt-1 max-w-xl font-medium">
               Manage your personal staff profile, role permissions, and cryptographically hashed login credentials.
             </p>
           </div>
@@ -171,51 +162,55 @@ export const Profile: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* 2. Elevated Profile Card */}
-        <div className="md:col-span-1 bg-white rounded-2xl p-6 border border-slate-200/80 shadow-[0_4px_25px_-4px_rgba(23,37,84,0.08)] flex flex-col items-center text-center">
+        <motion.div
+          whileHover={{ y: -3 }}
+          className="md:col-span-1 card-premium p-6 flex flex-col items-center text-center"
+        >
           <div className="relative mb-4">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-[#172554] via-[#2563EB] to-[#0d9488] text-white font-black text-3xl flex items-center justify-center shadow-lg shadow-blue-500/25 border-2 border-white">
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-[#172554] via-[#2563EB] to-[#0D9488] text-white font-black text-3xl flex items-center justify-center shadow-lg shadow-blue-500/30 border-2 border-white">
               {(user?.fullName || 'U').charAt(0).toUpperCase()}
             </div>
-            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white" title="Active">
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white shadow-sm" title="Active">
               <CheckCircle2 className="w-3.5 h-3.5" />
             </div>
           </div>
 
           <h2 className="text-lg font-black text-[#172554] tracking-tight">{user?.fullName}</h2>
-          <p className="text-xs font-mono text-slate-400 mt-0.5">@{user?.username}</p>
+          <p className="text-xs font-mono font-bold text-slate-500 mt-0.5">@{user?.username}</p>
 
-          <div className="mt-3 inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/70">
+          <div className="mt-3 badge-partial">
             <Award className="w-3.5 h-3.5" />
             <span>{user?.role === 'ADMIN' ? 'Master Administrator' : 'Sales Executive'}</span>
           </div>
 
-          <div className="w-full mt-6 pt-5 border-t border-slate-100 space-y-3 text-left text-xs">
-            <div className="flex items-center space-x-2 text-slate-600">
-              <Mail className="w-4 h-4 text-slate-400" />
-              <span className="font-medium truncate">{user?.email || 'N/A'}</span>
+          <div className="w-full mt-6 pt-5 border-t border-[#D5DFED] space-y-3 text-left text-xs">
+            <div className="flex items-center space-x-2.5 text-[#172554] font-semibold">
+              <Mail className="w-4 h-4 text-[#2563EB] shrink-0" />
+              <span className="truncate">{user?.email || 'N/A'}</span>
             </div>
-            <div className="flex items-center space-x-2 text-slate-600">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span className="font-medium">Stateless JWT Protected</span>
+            <div className="flex items-center space-x-2.5 text-[#172554] font-semibold">
+              <ShieldCheck className="w-4 h-4 text-[#0D9488] shrink-0" />
+              <span>Stateless JWT Protected</span>
             </div>
-            <div className="flex items-center space-x-2 text-slate-600">
-              <Sparkles className="w-4 h-4 text-teal-500" />
-              <span className="font-medium">Bcrypt Password Hashing</span>
+            <div className="flex items-center space-x-2.5 text-[#172554] font-semibold">
+              <Sparkles className="w-4 h-4 text-indigo-500 shrink-0" />
+              <span>Bcrypt Password Hashing</span>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* 3. Personal Password Reset Form Card */}
-        <div className="md:col-span-2 bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-[0_4px_25px_-4px_rgba(23,37,84,0.08)]">
-          <div className="flex items-center space-x-2 text-sm font-bold text-[#172554] pb-3 mb-5 border-b border-slate-100">
-            <KeyRound className="w-4 h-4 text-[#2563EB]" />
+        <div className="md:col-span-2 card-premium p-6 sm:p-8">
+          <div className="flex items-center space-x-2.5 text-sm font-black text-[#172554] pb-3.5 mb-5 border-b border-[#D5DFED]">
+            <span className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#2563EB]">
+              <KeyRound className="w-4 h-4" />
+            </span>
             <span>Update Personal Account Password</span>
           </div>
 
           <form onSubmit={handlePasswordChange} className="space-y-5">
-            {/* Current Password */}
             <div>
-              <label className="block text-xs font-bold text-[#172554] uppercase tracking-wider mb-1.5">
+              <label className="label-modern">
                 Current Password <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
@@ -223,23 +218,22 @@ export const Profile: React.FC = () => {
                   type={showCurrent ? 'text' : 'password'}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#EEF3FA]/60 focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all pr-10"
+                  className="input-modern pr-10"
                   placeholder="Enter current password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowCurrent(!showCurrent)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
                 >
                   {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {/* New Password */}
             <div>
-              <label className="block text-xs font-bold text-[#172554] uppercase tracking-wider mb-1.5">
+              <label className="label-modern">
                 New Password <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
@@ -247,41 +241,36 @@ export const Profile: React.FC = () => {
                   type={showNew ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#EEF3FA]/60 focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all pr-10"
+                  className="input-modern pr-10"
                   placeholder="Minimum 6 characters"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowNew(!showNew)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
                 >
                   {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
 
-              {/* Password Strength Meter */}
               {newPassword && (
                 <div className="mt-2 space-y-1">
-                  <div className="flex items-center justify-between text-[10px] font-bold">
-                    <span className="text-slate-400 uppercase">Strength:</span>
-                    <span className={`capitalize ${strength.label === 'Strong' ? 'text-emerald-600' : strength.label === 'Good' ? 'text-blue-600' : 'text-amber-600'}`}>
+                  <div className="flex items-center justify-between text-[10px] font-extrabold">
+                    <span className="text-slate-500 uppercase">Strength:</span>
+                    <span className={strength.label === 'Strong' ? 'text-[#0D9488]' : strength.label === 'Good' ? 'text-[#2563EB]' : 'text-amber-600'}>
                       {strength.label}
                     </span>
                   </div>
-                  <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full transition-all duration-300 ${strength.color}`}
-                      style={{ width: `${strength.score}%` }}
-                    />
+                  <div className="w-full h-1.5 bg-[#EEF2F8] rounded-full overflow-hidden">
+                    <div className={`h-full transition-all duration-300 ${strength.color}`} style={{ width: `${strength.score}%` }} />
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Confirm New Password */}
             <div>
-              <label className="block text-xs font-bold text-[#172554] uppercase tracking-wider mb-1.5">
+              <label className="label-modern">
                 Confirm New Password <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
@@ -289,14 +278,14 @@ export const Profile: React.FC = () => {
                   type={showConfirm ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#EEF3FA]/60 focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all pr-10"
+                  className="input-modern pr-10"
                   placeholder="Repeat new password"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
                 >
                   {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -309,7 +298,7 @@ export const Profile: React.FC = () => {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#2563EB] to-[#0d9488] hover:from-[#1d4ed8] hover:to-[#0f766e] text-white font-bold text-xs shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
+                className="btn-primary px-6 py-2.5 text-xs space-x-2"
               >
                 <Lock className="w-4 h-4" />
                 <span>{loading ? 'Updating Credentials...' : 'Save & Update Password'}</span>
@@ -321,38 +310,35 @@ export const Profile: React.FC = () => {
 
       {/* 4. ADMIN-ONLY SECTION: MANAGE SALES EXECUTIVE PASSWORDS */}
       {isAdmin && (
-        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200/80 shadow-[0_4px_25px_-4px_rgba(23,37,84,0.08)]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-6 border-b border-slate-100">
-            <div className="flex items-center space-x-2.5">
-              <div className="p-2 rounded-xl bg-amber-50 text-amber-600 border border-amber-200">
+        <div className="card-premium p-6 sm:p-8 border-t-4 border-t-amber-500">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-6 border-b border-[#D5DFED]">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center shrink-0">
                 <ShieldAlert className="w-5 h-5" />
               </div>
               <div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-base font-black text-[#172554] tracking-tight">
                     Manage Sales Executive Passwords
                   </h3>
-                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                    Admin Exclusive
-                  </span>
+                  <span className="badge-pending">Admin Exclusive</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Select a Sales Executive staff account and reset their access credentials.
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Select a Sales Executive staff account and reset their access credentials. Active sessions are automatically invalidated.
                 </p>
               </div>
             </div>
           </div>
 
           <form onSubmit={handleAdminResetSalespersonPassword} className="space-y-5">
-            {/* Sales Executive Selector */}
             <div>
-              <label className="block text-xs font-bold text-[#172554] uppercase tracking-wider mb-1.5">
+              <label className="label-modern">
                 Select Sales Executive <span className="text-rose-500">*</span>
               </label>
               <select
                 value={selectedSalespersonId}
                 onChange={(e) => setSelectedSalespersonId(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[#EEF3FA]/60 focus:bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] cursor-pointer"
+                className="input-modern font-bold cursor-pointer"
                 required
               >
                 {salespersons.map((sp) => (
@@ -364,24 +350,21 @@ export const Profile: React.FC = () => {
             </div>
 
             {selectedSalesperson && (
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+              <div className="p-3.5 rounded-xl bg-[#EEF2F8]/80 border-[1.5px] border-[#D5DFED] flex items-center justify-between text-xs">
                 <div>
-                  <span className="font-black text-slate-800">{selectedSalesperson.fullName}</span>
-                  <span className="text-slate-400 font-mono ml-2">@{selectedSalesperson.username}</span>
-                  <p className="text-[11px] text-slate-500 mt-0.5">{selectedSalesperson.email}</p>
+                  <span className="font-black text-[#172554]">{selectedSalesperson.fullName}</span>
+                  <span className="text-slate-500 font-mono font-bold ml-2">@{selectedSalesperson.username}</span>
+                  <p className="text-[11px] text-slate-500 font-medium mt-0.5">{selectedSalesperson.email}</p>
                 </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                  selectedSalesperson.active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600'
-                }`}>
+                <span className={selectedSalesperson.active ? 'badge-delivered' : 'badge-overdue'}>
                   {selectedSalesperson.active ? 'Account Active' : 'Deactivated'}
                 </span>
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* New Password */}
               <div>
-                <label className="block text-xs font-bold text-[#172554] uppercase tracking-wider mb-1.5">
+                <label className="label-modern">
                   Enter New Password <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
@@ -389,14 +372,14 @@ export const Profile: React.FC = () => {
                     type={showSpNew ? 'text' : 'password'}
                     value={spNewPassword}
                     onChange={(e) => setSpNewPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-[#EEF3FA]/60 focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all pr-10"
+                    className="input-modern pr-10"
                     placeholder="Minimum 6 characters"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowSpNew(!showSpNew)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
                   >
                     {showSpNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -404,25 +387,21 @@ export const Profile: React.FC = () => {
 
                 {spNewPassword && (
                   <div className="mt-2 space-y-1">
-                    <div className="flex items-center justify-between text-[10px] font-bold">
-                      <span className="text-slate-400 uppercase">Strength:</span>
-                      <span className={`capitalize ${spStrength.label === 'Strong' ? 'text-emerald-600' : spStrength.label === 'Good' ? 'text-blue-600' : 'text-amber-600'}`}>
+                    <div className="flex items-center justify-between text-[10px] font-extrabold">
+                      <span className="text-slate-500 uppercase">Strength:</span>
+                      <span className={spStrength.label === 'Strong' ? 'text-[#0D9488]' : spStrength.label === 'Good' ? 'text-[#2563EB]' : 'text-amber-600'}>
                         {spStrength.label}
                       </span>
                     </div>
-                    <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div 
-                        className={`h-full transition-all duration-300 ${spStrength.color}`}
-                        style={{ width: `${spStrength.score}%` }}
-                      />
+                    <div className="w-full h-1.5 bg-[#EEF2F8] rounded-full overflow-hidden">
+                      <div className={`h-full transition-all duration-300 ${spStrength.color}`} style={{ width: `${spStrength.score}%` }} />
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Confirm Password */}
               <div>
-                <label className="block text-xs font-bold text-[#172554] uppercase tracking-wider mb-1.5">
+                <label className="label-modern">
                   Confirm New Password <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
@@ -430,14 +409,14 @@ export const Profile: React.FC = () => {
                     type={showSpConfirm ? 'text' : 'password'}
                     value={spConfirmPassword}
                     onChange={(e) => setSpConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-[#EEF3FA]/60 focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#2563EB]/20 focus:border-[#2563EB] transition-all pr-10"
+                    className="input-modern pr-10"
                     placeholder="Repeat new password"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowSpConfirm(!showSpConfirm)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[#2563EB] p-1"
                   >
                     {showSpConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -451,7 +430,7 @@ export const Profile: React.FC = () => {
                 whileTap={{ scale: 0.98 }}
                 type="submit"
                 disabled={spResetLoading}
-                className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 text-white font-bold text-xs shadow-md shadow-amber-500/20 transition-all disabled:opacity-50"
+                className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 text-white font-extrabold text-xs shadow-md shadow-amber-500/25 transition-all disabled:opacity-50"
               >
                 <KeyRound className="w-4 h-4" />
                 <span>{spResetLoading ? 'Updating Credentials...' : 'Save Updated Sales Executive Password'}</span>
@@ -460,6 +439,6 @@ export const Profile: React.FC = () => {
           </form>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
