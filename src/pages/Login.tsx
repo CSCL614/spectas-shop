@@ -47,7 +47,14 @@ export const Login: React.FC = () => {
       toast.success('Welcome to SRI SAI SMART OPTICALS SOFTWARE!');
       navigate('/dashboard');
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Invalid username or password (Check if backend server is running)';
+      let msg = err.response?.data?.message;
+      if (!msg) {
+        if (!err.response) {
+          msg = 'Cannot connect to backend server. Please check if backend is running on port 8099.';
+        } else {
+          msg = 'Invalid username or password. Please verify your credentials.';
+        }
+      }
       setError(msg);
       toast.error(msg);
     } finally {
