@@ -49,13 +49,13 @@ export const downloadOrderReceiptPdf = (sale: SaleResponse): void => {
   // Shop Branding (Left)
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(20);
-  doc.text('SRI SAI OPTICALS', 15, 16);
+  doc.setFontSize(15);
+  doc.text('SRI SAI SMART OPTICALS SOFTWARE', 15, 16);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
   doc.setTextColor(191, 219, 254);
-  doc.text('Premium Optical Store & Eyewear Care', 15, 23);
+  doc.text('A Clear Vision for Better Business', 15, 23);
   doc.setFontSize(8);
   doc.text('Smart Optical Order Management & Billing Receipt', 15, 28.5);
 
@@ -311,13 +311,13 @@ export const downloadOrderReceiptPdf = (sale: SaleResponse): void => {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(...navy);
-  doc.text('Thank you for choosing Sri Sai Opticals!', 15, footerY - 1);
+  doc.text('Thank you for choosing SRI SAI SMART OPTICALS SOFTWARE!', 15, footerY - 1);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(...mutedText);
   doc.text(
-    `Generated on ${new Date().toLocaleString('en-IN')} • Computer-generated optical order receipt.`,
+    `Generated on ${new Date().toLocaleString('en-IN')} • A Clear Vision for Better Business`,
     15,
     footerY + 4.5
   );
@@ -329,6 +329,6 @@ export const downloadOrderReceiptPdf = (sale: SaleResponse): void => {
 
   const safeName = (sale.customerName || 'Customer').replace(/[^a-zA-Z0-9]/g, '_');
   const safeSticker = (sale.stickerNumber || 'ORDER').replace(/[^a-zA-Z0-9-]/g, '');
-  doc.save(`Sri_Sai_Opticals_Receipt_${safeSticker}_${safeName}.pdf`);
+  doc.save(`Sri_Sai_Smart_Opticals_Receipt_${safeSticker}_${safeName}.pdf`);
 };
 

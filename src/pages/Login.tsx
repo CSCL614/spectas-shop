@@ -44,7 +44,7 @@ export const Login: React.FC = () => {
       setLoading(true);
       setError('');
       await login(username, password);
-      toast.success('Welcome to Sri Sai Opticals!');
+      toast.success('Welcome to SRI SAI SMART OPTICALS SOFTWARE!');
       navigate('/dashboard');
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Invalid username or password (Check if backend server is running)';
@@ -104,14 +104,14 @@ export const Login: React.FC = () => {
               <Glasses className="w-6 h-6" />
             </motion.div>
             <div>
-              <span className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-1.5">
+              <span className="text-lg sm:text-xl lg:text-2xl font-black tracking-tight text-white flex flex-wrap items-center gap-1.5">
                 SRI SAI{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300">
-                  OPTICALS
+                  SMART OPTICALS SOFTWARE
                 </span>
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-blue-200/80 block">
-                Smart Optical Business Management
+              <span className="text-[10px] font-bold uppercase tracking-widest text-teal-300/90 block mt-0.5">
+                A Clear Vision for Better Business
               </span>
             </div>
           </div>
@@ -136,9 +136,9 @@ export const Login: React.FC = () => {
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.08]">
-              SMARTER VISION. <br />
+              A CLEAR VISION. <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-teal-300">
-                SMARTER BUSINESS.
+                FOR BETTER BUSINESS.
               </span>
             </h1>
 
@@ -169,7 +169,7 @@ export const Login: React.FC = () => {
             >
               <img
                 src={heroSpectacles || '/spectacles-hero-3d.jpg'}
-                alt="Sri Sai Opticals 3D Eyewear Frame"
+                alt="SRI SAI SMART OPTICALS SOFTWARE 3D Eyewear Frame"
                 className="w-full h-auto max-h-[245px] sm:max-h-[275px] object-cover object-center"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#020617]/85 via-transparent to-white/5 pointer-events-none" />
@@ -190,7 +190,7 @@ export const Login: React.FC = () => {
         </div>
 
         <div className="relative z-10 text-[11px] text-slate-400 flex flex-col sm:flex-row justify-between gap-1 pt-4 border-t border-white/10">
-          <span>© {new Date().getFullYear()} Sri Sai Opticals • Enterprise Optical Management</span>
+          <span>© {new Date().getFullYear()} SRI SAI SMART OPTICALS SOFTWARE • A Clear Vision for Better Business</span>
           <span className="text-teal-300/80 font-mono text-[10px] font-bold flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             Cloud ERP Active
@@ -217,13 +217,13 @@ export const Login: React.FC = () => {
                     <CheckCircle2 className="w-3 h-3 text-[#0D9488]" />
                     Portal Authentication
                   </span>
-                  <span className="text-[11px] font-black text-slate-400 tracking-wider">SRI SAI OPTICALS</span>
+                  <span className="text-[10px] font-black text-slate-500 tracking-wider">SRI SAI SMART OPTICALS</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-[#172554] tracking-tight">
                   Welcome Back
                 </h2>
-                <p className="text-xs font-medium text-slate-500 mt-1">
-                  Sign in with your assigned optical store credentials
+                <p className="text-xs font-semibold text-slate-500 mt-1">
+                  A Clear Vision for Better Business • Sign In
                 </p>
               </div>
 
@@ -314,7 +314,7 @@ export const Login: React.FC = () => {
                   disabled={loading}
                   className="w-full py-3.5 px-4 rounded-xl font-extrabold text-xs text-white bg-gradient-to-r from-[#172554] via-[#2563EB] to-[#0D9488] hover:shadow-xl hover:shadow-blue-500/35 shadow-lg shadow-blue-600/25 flex items-center justify-center space-x-2 transition-all disabled:opacity-50"
                 >
-                  <span>{loading ? 'Authenticating...' : 'Sign In to Sri Sai Opticals'}</span>
+                  <span>{loading ? 'Authenticating...' : 'Sign In to SRI SAI SMART OPTICALS SOFTWARE'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>
               </form>
@@ -386,7 +386,7 @@ export const Login: React.FC = () => {
                   <h3 className="font-black text-sm text-[#172554]">Forgot Password Assistance</h3>
                 </div>
                 <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                  Sri Sai Opticals uses centralized RBAC security. Passwords can be reset directly by the Shop Administrator under <strong>My Profile & Security</strong> or <strong>Admin & Accounts</strong>.
+                  SRI SAI SMART OPTICALS SOFTWARE uses centralized RBAC security. Passwords can be reset directly by the Shop Administrator under <strong>My Profile & Security</strong> or <strong>Admin & Accounts</strong>.
                 </p>
                 <motion.button
                   whileHover={{ scale: 1.02 }}

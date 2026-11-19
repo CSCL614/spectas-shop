@@ -30,9 +30,14 @@ export const LoadingSpinner: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: s
         />
       </div>
       {size === 'lg' && (
-        <span className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400 animate-pulse">
-          Loading Sri Sai Opticals...
-        </span>
+        <div className="text-center">
+          <span className="block text-[11px] font-extrabold uppercase tracking-widest text-slate-400 animate-pulse">
+            Loading SRI SAI SMART OPTICALS SOFTWARE...
+          </span>
+          <span className="block text-[10px] font-semibold text-slate-400 mt-0.5">
+            A Clear Vision for Better Business
+          </span>
+        </div>
       )}
     </div>
   );

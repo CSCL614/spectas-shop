@@ -111,8 +111,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
               <Glasses className="w-3.5 h-3.5 stroke-[2.5]" />
             </span>
             <div className="min-w-0">
-              <p className="text-[11px] font-black text-white tracking-tight truncate leading-none">
-                Sri Sai Opticals
+              <p className="text-[11px] font-black text-white tracking-tight truncate leading-none" title="SRI SAI SMART OPTICALS SOFTWARE">
+                SRI SAI SMART OPTICALS SOFTWARE
               </p>
               <p className="text-[9px] font-bold text-cyan-200/85 uppercase tracking-wider mt-0.5 truncate">
                 {isAdmin ? 'Admin Command' : 'Sales Desk'}
@@ -213,14 +213,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen = false, onClose }) => 
           <div className="flex items-center justify-between">
             <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-teal-300">
               <Sparkles className="w-3 h-3 text-amber-300" />
-              <span>Optical ERP</span>
+              <span>SRI SAI SMART OPTICALS</span>
             </span>
             <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-md bg-emerald-400/20 text-emerald-200 border border-emerald-300/30">
               LIVE
             </span>
           </div>
-          <p className="text-[10px] font-medium text-blue-100/80 mt-1 leading-snug">
-            Precision Retail & Lab Order Suite
+          <p className="text-[10px] font-semibold text-blue-100/90 mt-1 leading-snug">
+            A Clear Vision for Better Business
           </p>
         </div>
       </div>

@@ -69,12 +69,12 @@ export const DailyStatement: React.FC = () => {
 
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(16);
-      doc.text('SRI SAI OPTICALS', 14, 11);
+      doc.setFontSize(15);
+      doc.text('SRI SAI SMART OPTICALS SOFTWARE', 14, 11);
 
-      doc.setFontSize(10);
+      doc.setFontSize(9.5);
       doc.setFont('helvetica', 'normal');
-      doc.text('Smart Optical Business Management System', 14, 18);
+      doc.text('A Clear Vision for Better Business', 14, 18);
 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(13);
@@ -199,13 +199,13 @@ export const DailyStatement: React.FC = () => {
           doc.setTextColor(148, 163, 184);
           doc.setFont('helvetica', 'normal');
           doc.text(
-            `Sri Sai Opticals ERP • Daily Business Statement (${selectedDate}) • Page ${data.pageNumber} of ${pageCount}`,
+            `SRI SAI SMART OPTICALS SOFTWARE • A Clear Vision for Better Business • Daily Statement (${selectedDate}) • Page ${data.pageNumber} of ${pageCount}`,
             148.5, 205, { align: 'center' }
           );
         },
       });
 
-      doc.save(`Sri_Sai_Opticals_Daily_Statement_${selectedDate}.pdf`);
+      doc.save(`Sri_Sai_Smart_Opticals_Daily_Statement_${selectedDate}.pdf`);
       toast.success('Daily Statement PDF downloaded successfully!');
     } catch (err) {
       console.error('PDF generation error:', err);

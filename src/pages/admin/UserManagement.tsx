@@ -487,7 +487,7 @@ export const UserManagement: React.FC = () => {
 
                 <div>
                   <label className="label-modern">Email Address <span className="text-rose-500">*</span></label>
-                  <input type="email" required value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="e.g. anand@srisaiopticals.com" className="input-modern font-mono" />
+                  <input type="email" required value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="e.g. anand@srisaismartopticals.com" className="input-modern font-mono" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">

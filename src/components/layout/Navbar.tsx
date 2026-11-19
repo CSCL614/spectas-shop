@@ -77,8 +77,8 @@ const CatEyeIcon: React.FC<{ className?: string }> = ({ className = 'w-6 h-3.5' 
 const MARQUEE_ITEMS = [
   { id: 'wayfarer', Icon: WayfarerIcon, label: 'Signature Frames', color: 'text-[#2563EB]' },
   { id: 'round', Icon: RoundFrameIcon, label: 'Anti-Glare Precision', color: 'text-[#0D9488]' },
-  { id: 'aviator', Icon: AviatorIcon, label: 'Sri Sai Opticals Lab', color: 'text-[#172554]' },
-  { id: 'cateye', Icon: CatEyeIcon, label: 'Blue-Cut Eyewear', color: 'text-indigo-600' },
+  { id: 'aviator', Icon: AviatorIcon, label: 'SRI SAI SMART OPTICALS SOFTWARE', color: 'text-[#172554]' },
+  { id: 'tagline', Icon: CatEyeIcon, label: 'A Clear Vision for Better Business', color: 'text-indigo-600' },
   { id: 'wayfarer2', Icon: WayfarerIcon, label: 'Smart Optical ERP', color: 'text-[#0D9488]' },
   { id: 'round2', Icon: RoundFrameIcon, label: 'Crafted Clarity', color: 'text-[#2563EB]' },
 ];
@@ -157,10 +157,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-black text-[#0F172A] tracking-tight text-base sm:text-lg leading-none whitespace-nowrap">
+                <span className="font-black text-[#0F172A] tracking-tight text-sm sm:text-base lg:text-lg leading-none whitespace-nowrap">
                   SRI SAI{' '}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2563EB] to-[#0D9488]">
-                    OPTICALS
+                    SMART OPTICALS SOFTWARE
                   </span>
                 </span>
                 <span
@@ -178,8 +178,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onMenuToggle, isMobileMenuOpen }
                   <span>{isAdmin ? 'Admin Portal' : 'Sales Portal'}</span>
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-semibold hidden sm:block mt-0.5 whitespace-nowrap">
-                Optical Order Management & ERP Suite
+              <p className="text-[10px] sm:text-[11px] text-slate-500 font-bold hidden sm:block mt-0.5 whitespace-nowrap">
+                A Clear Vision for Better Business
               </p>
             </div>
           </motion.div>

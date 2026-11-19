@@ -325,7 +325,7 @@ export const Profile: React.FC = () => {
                   <p className="font-black text-[#172554]">Admin-Managed Credentials</p>
                   <p className="text-slate-600 font-medium leading-relaxed">
                     For security and store governance, password updates are managed exclusively by the{' '}
-                    <strong className="text-[#172554]">Sri Sai Opticals Master Administrator</strong>.
+                    <strong className="text-[#172554]">SRI SAI SMART OPTICALS SOFTWARE Master Administrator</strong>.
                     If you need your login password changed or reset, please contact your administrator.
                   </p>
                 </div>

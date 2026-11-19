@@ -78,7 +78,7 @@ export const ExcelExport: React.FC = () => {
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `sri_sai_opticals_sales_${Date.now()}.xlsx`);
+      link.setAttribute('download', `sri_sai_smart_opticals_sales_${Date.now()}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
